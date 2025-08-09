@@ -2,63 +2,80 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Account;
 use Illuminate\Http\Request;
+use App\Models\Account;
+use Illuminate\Support\Facades\Validator;
 
 class AccountController extends Controller
 {
-    // Display a listing of accounts
     public function index()
     {
-        return response()->json(Account::all());
+        return response()->json(Account::all(), 200);
     }
 
-    // Store a newly created account
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|integer|exists:users,id',
-            'plaid_item_id' => 'nullable|string|max:255',
-            'name' => 'required|string|max:255',
-            'type' => 'required|string|max:100',
-            'balance' => 'required|numeric',
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|numeric|exists:users,id',
+            'plaid_item_id' => 'nullable|string',
+            'name' => 'required|string',
+            'type' => 'required|string',
+            'balance' => 'required|numeric'
         ]);
 
-        $account = Account::create($validated);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
+        $account = Account::create($validator->validated());
         return response()->json($account, 201);
     }
 
-    // Display a single account
     public function show($id)
     {
-        $account = Account::findOrFail($id);
-        return response()->json($account);
+        $account = Account::find($id);
+
+        if (!$account) {
+            return response()->json(['message' => 'Account not found'], 404);
+        }
+
+        return response()->json($account, 200);
     }
 
-    // Update an account
     public function update(Request $request, $id)
     {
-        $account = Account::findOrFail($id);
+        $account = Account::find($id);
 
-        $validated = $request->validate([
-            'plaid_item_id' => 'nullable|string|max:255',
-            'name' => 'sometimes|required|string|max:255',
-            'type' => 'sometimes|required|string|max:100',
-            'balance' => 'sometimes|required|numeric',
+        if (!$account) {
+            return response()->json(['message' => 'Account not found'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|numeric|exists:users,id',
+            'plaid_item_id' => 'nullable|string',
+            'name' => 'required|string',
+            'type' => 'required|string',
+            'balance' => 'required|numeric'
         ]);
 
-        $account->update($validated);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
-        return response()->json($account);
+        $account->update($validator->validated());
+
+        return response()->json($account, 200);
     }
 
-    // Delete an account
     public function destroy($id)
     {
-        $account = Account::findOrFail($id);
-        $account->delete();
+        $account = Account::find($id);
 
-        return response()->json(['message' => 'Account deleted successfully']);
+        if (!$account) {
+            return response()->json(['message' => 'Account not found'], 404);
+        }
+
+        $account->delete();
+        return response()->json(['message' => 'Account deleted successfully'], 200);
     }
 }
