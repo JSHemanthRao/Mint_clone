@@ -2,59 +2,70 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Category;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        
         return response()->json(Category::all());
     }
+
+
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        
-        $request->validate([
-            'name' => 'required|string|max:255'
+        $validate = $request->validate([
+            'name' => 'required|string|max:100',
         ]);
-
-        
-        $category = Category::create([
-            'name' => $request->name
-        ]);
-
-        return response()->json($category, 201);
+        $category = Category::create($validate);
+        return response()->json($category,201);
     }
 
-  
-    public function show($id)
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
     {
-        $category = Category::findOrFail($id);
-        return response()->json($category);
+        $category = Category::find($id);
+        if (! $category) {
+            return response()->json(["message"=> "Category not found"],404);
+        }
+        return response()->json($category, 200);
     }
 
-       public function update(Request $request, $id)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
     {
-        $request->validate([
-            'name' => 'required|string|max:255'
+        $category = Category::find($id);
+        if (! $category) {
+            return response()->json(["message"=> "Category not found"],404);
+        }
+        $validate = $request->validate([
+            "name"=> "required|string|max:100",
         ]);
-
-        $category = Category::findOrFail($id);
-        $category->update([
-            'name' => $request->name
-        ]);
-
-        return response()->json($category);
+        $category->update($validate);
+        return response()->json($category,200);
     }
 
-   
-    public function destroy($id)
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
     {
-        $category = Category::findOrFail($id);
+        $category = Category::find($id);
+        if (! $category) {
+            return response()->json(["message"=> "Category not found"],404);
+        }
         $category->delete();
-
-        return response()->json(['message' => 'Category deleted successfully']);
+        return response()->json(["message"=> "Category deleted successfully"],200);
     }
 }

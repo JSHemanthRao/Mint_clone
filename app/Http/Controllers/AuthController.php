@@ -4,22 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Facades\JWTAuth;
+// use Illuminate\Routing\Controller;
 
 class AuthController extends Controller
 {
-    public function showRegisterForm()
-    {
-        return view('auth.register');
-    }
-
     public function register(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:6|confirmed',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         $user = User::create([
@@ -28,35 +24,48 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        Auth::login($user); // log in immediately
-        return redirect()->route('accounts.index');
-    }
+        $token = JWTAuth::fromUser($user);
 
-    public function showLoginForm()
-    {
-        return view('auth.login');
+        return response()->json(compact('user', 'token'), 201);
     }
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
+        $request->validate([
+            'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
-        print_r($credentials);
 
-            $request->session()->regenerate();
-            return redirect()->route('accounts.index');
+        $credentials = $request->only('email', 'password');
 
-        
+        if (!$token = JWTAuth::attempt($credentials)) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
+        }
+
+        return response()->json(compact('token'));
     }
 
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+    // public function me(){
+    //     return response()->json(['user' => JWTAuth::user()]);
+    // }
 
-        return redirect()->route('login.form');
+    public function me()
+{
+    $user = JWTAuth::user();
+    return response()->json(['id' => $user->id]);
+}
+
+    public function logout()
+    {
+        JWTAuth::invalidate(JWTAuth::getToken());
+
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    public function refresh()
+    {
+        $token = JWTAuth::refresh(JWTAuth::getToken());
+
+        return response()->json(compact('token'));
     }
 }

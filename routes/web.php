@@ -1,28 +1,39 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\BillController;
+use App\Http\Controllers\GoalController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\UserController; 
 
-// Home page redirects to register
-Route::get('/', [AuthController::class, 'showRegisterForm'])->name('home');
 
-// Register
-Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::get('/profile', [UserController::class, 'showProfile'])->name('profile');
 
-// Login
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login.form');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
 
-// Protected routes (only accessible after login)
-Route::middleware('auth')->group(function () {
-    // Accounts dashboard
-    Route::get('/accounts', [AccountController::class, 'dashboard'])->name('accounts.index');
+Route::view('/', 'register');
 
-    // Add new account
-    Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
+Route::view('/login', 'login');
 
-    // Logout
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-});
+Route::view('/dashboard', 'dashboard')->name('dashboard');
+
+Route::view('/accounts', 'Account')->name('accounts');
+Route::post('/accounts', [AccountController::class, 'store'])->name('accounts.store');
+
+
+Route::get('/budgets', [BudgetController::class, 'display'])->name('budgets');
+Route::post('/budgets', [BudgetController::class, 'store'])->name('budgets.store');
+
+Route::view('/bills', 'Bills')->name('bills');
+Route::post('/bills', [BillController::class, 'store'])->name('bills.store');
+
+Route::get('/transactions', [TransactionController::class, 'display'])->name('transactions');
+Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+
+Route::view('/goals', 'Goals')->name('goals');
+Route::post('/goals', [GoalController::class, 'store'])->name('goals.store');
+
+Route::view('/categories', 'Categories')->name('categories');
+Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');

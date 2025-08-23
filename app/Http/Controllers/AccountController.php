@@ -2,56 +2,74 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Account;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AccountController extends Controller
 {
-    // For web view (dashboard)
-    public function dashboard()
-    {
-        $accounts = Account::where('user_id', Auth::id())->get();
-        return view('accounts.index', compact('accounts'));
-    }
-
-    // For API
     public function index()
     {
-        return response()->json(Account::all(), 200);
+        return response()->json(Account::where('user_id', Auth::id())->get());
     }
 
     public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'type' => 'required|string|max:100',
+        'balance' => 'required|numeric'
+    ]);
+
+    // Authenticate user from JWT
+    $user = JWTAuth::parseToken()->authenticate();
+
+    if (!$user) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+
+    // Attach the user_id properly
+    $validated['user_id'] = $user->id;
+
+    $account = Account::create($validated);
+
+    return response()->json($account, 201);
+}
+
+
+    public function show($id)
     {
-        $data = $request->all();
+        $account = Account::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        return response()->json($account);
+    }
 
-        // If user_id not provided, set the logged-in user
-        if (!isset($data['user_id'])) {
-            $data['user_id'] = Auth::id();
-        }
+    public function edit($id)
+{
+    $account = Account::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+    return view('edit', compact('account'));
+}
 
-        $validator = Validator::make($data, [
-            'user_id' => 'required|numeric|exists:users,id',
-            'plaid_item_id' => 'nullable|string',
-            'name' => 'required|string',
-            'type' => 'required|string',
+    public function update(Request $request, $id)
+    {
+        $account = Account::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|max:100',
             'balance' => 'required|numeric'
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+        $validated['user_id'] = Auth::id();
 
-        $account = Account::create($validator->validated());
-
-        // If the request expects JSON (API), return JSON
-        if ($request->expectsJson()) {
-            return response()->json($account, 201);
-        }
-
-        // Otherwise, redirect back for web
-        return redirect()->route('accounts.index')->with('success', 'Account created successfully');
+        $account->update($validated);
+        return response()->json($account, 200);
     }
 
+    public function destroy($id)
+    {
+        $account = Account::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        $account->delete();
+        return response()->json(['message' => 'Account deleted']);
+    }
 }

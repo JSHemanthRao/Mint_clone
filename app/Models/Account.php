@@ -2,29 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Account extends Model
 {
-    use HasFactory;
+    protected $fillable = ['user_id','name', 'type', 'balance'];
 
-    protected $fillable = [
-        'user_id',
-        'plaid_item_id',
-        'name',
-        'type',
-        'balance',
-    ];
-
-    // Relationships
-    public function user()
-    {
-        return $this->belongsTo(User::class);
+    public function user(){
+        // Corrected this to point to the User model
+        return $this->belongsTo(User::class,'user_id');
     }
 
-    public function transactions()
-    {
+    public function transactions(){
+        // Corrected this to point to the Transaction model
         return $this->hasMany(Transaction::class);
     }
+
 }

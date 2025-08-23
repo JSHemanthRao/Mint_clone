@@ -2,22 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Cache\HasCacheLock;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    use HasFactory;
+    protected $fillable=['name'];
 
-    protected $fillable = ['name'];
-
-    public function budgets(){
-        return $this->hasMany(Budget::class);
-    }
-
-     public function Transactions(){
+    public function transactions(){
         return $this->hasMany(Transaction::class);
     }
 
+    public function budgets(){
+        return $this->hasMany(Transaction::class);
+    }
 }

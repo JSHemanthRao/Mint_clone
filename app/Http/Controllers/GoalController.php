@@ -3,58 +3,65 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Goal; 
-
+use App\Models\Goal;
+use Illuminate\Support\Facades\Auth;
 class GoalController extends Controller
 {
     public function index()
     {
-        return response()->json(Goal::all()); 
+        return response()->json(Goal::where('user_id', Auth::id())->get());
     }
+
 
     public function store(Request $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'name' => 'required|string',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
             'target_amount' => 'required|numeric',
-            'current_amount' => 'required|numeric'
+            'current_amount' => 'numeric',
+            'due_date' => 'required|date',
         ]);
 
-        $goal = Goal::create($request->all());
+        $validated['user_id'] = Auth::id(); // Securely set user_id
+        $goal = Goal::create($validated);
         return response()->json($goal, 201);
     }
 
-    public function update(Request $request, string $id)
+    public function show($id)
     {
         $goal = Goal::find($id);
-
         if (!$goal) {
             return response()->json(['message' => 'Goal not found'], 404);
         }
-
-        $request->validate([
-            'user_id' => 'required|integer',
-            'name' => 'required|string',
-            'target_amount' => 'required|numeric',
-            'current_amount' => 'required|numeric'
-        ]);
-
-        $goal->update($request->all());
-
-        return response()->json($goal, 200);
+        return response()->json($goal);
     }
 
-    public function destroy(string $id)
+    public function update(Request $request, $id)
     {
         $goal = Goal::find($id);
-
         if (!$goal) {
             return response()->json(['message' => 'Goal not found'], 404);
         }
 
-        $goal->delete();
+        $validated = $request->validate([
+            'name' => 'string|max:255',
+            'target_amount' => 'numeric',
+            'current_amount' => 'numeric',
+            'due_date' => 'date',
+        ]);
 
-        return response()->json(['message' => 'Goal deleted successfully'], 200);
+
+        $goal->update($validated);
+        return response()->json($goal);
+    }
+
+    public function destroy($id)
+    {
+        $goal = Goal::find($id);
+        if (!$goal) {
+            return response()->json(['message' => 'Goal not found'], 404);
+        }
+        $goal->delete();
+        return response()->json(['message' => 'Goal deleted successfully']);
     }
 }
