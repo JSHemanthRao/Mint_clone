@@ -40,33 +40,61 @@
   </main>
 
   <script>
-    const token = localStorage.getItem("jwt_token");
-    if (!token) {
-      window.location.href = "/login";
-    }
+  const token = localStorage.getItem("jwt_token");
+  if (!token) {
+    window.location.href = "/login";
+  }
 
-    async function fetchProfile() {
-    const token = localStorage.getItem("token");
-
+  async function fetchProfile() {
     const response = await fetch("http://127.0.0.1:8000/api/me", {
-        method: "GET",
-        headers: {
-            "Authorization": "Bearer " + token,
-            "Accept": "application/json",
-        },
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/json",
+      },
     });
 
     if (response.ok) {
-        const data = await response.json();
-        console.log("Profile Data:", data);
-        // Redirect to profile page and pass user info if needed
+      const data = await response.json();
+      console.log("Profile Data:", data);
+
+      // ✅ Render Profile
+      const profileCard = document.getElementById("profileCard");
+      profileCard.innerHTML = `
+        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=0D8ABC&color=fff&size=100" 
+             alt="Avatar" class="w-20 h-20 rounded-full">
+        <div>
+          <h3 class="text-xl font-semibold">${data.name}</h3>
+          <p class="text-gray-400">${data.email}</p>
+          <p class="text-gray-400">Joined: ${new Date(data.created_at).toLocaleDateString()}</p>
+        </div>
+      `;
+
+      // ✅ If accounts are included in API response
+      if (data.accounts) {
+        const accountsList = document.getElementById("accountsList");
+        accountsList.innerHTML = data.accounts.map(acc => `
+          <div class="bg-gray-800 p-4 rounded-xl shadow-md">
+            <h4 class="text-lg font-bold">${acc.name}</h4>
+            <p class="text-gray-400">Balance: ₹${acc.balance}</p>
+            <p class="text-gray-400">Type: ${acc.type}</p>
+          </div>
+        `).join("");
+      }
+
     } else {
-        console.log("Not logged in, redirecting to login...");
-        window.location.href = "/login";
+      console.log("Not logged in, redirecting to login...");
+      window.location.href = "/login";
     }
-}
+  }
 
-  </script>
+  fetchProfile();
 
+  // ✅ Logout button
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("jwt_token");
+    window.location.href = "/login";
+  });
+</script>
 </body>
 </html>

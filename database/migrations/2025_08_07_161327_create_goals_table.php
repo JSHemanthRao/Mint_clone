@@ -17,9 +17,10 @@ return new class extends Migration
             $table->string('name');
             $table->decimal('target_amount', 15, 2);
             $table->decimal('current_amount', 15, 2)->default(0.00);
+            $table->decimal('due_date', 15, 2)->default(0.00);
+
             $table->timestamps();
         });
-
     }
 
     /**
