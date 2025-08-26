@@ -98,6 +98,7 @@
           data.error || "Login failed. Please check credentials.";
         document.getElementById('generalError').classList.remove('hidden');
       }
+      
     });
   </script>
 
