@@ -139,142 +139,64 @@
   </div>
 
 
-  <script>
-    const token = localStorage.getItem("jwt_token");
-    if (!token) {
-      window.location.href = "/login";
-    }
-
-    // Logout
-    document.getElementById("logoutBtn").addEventListener("click", async function() {
-      localStorage.removeItem("jwt_token");
-      window.location.href = "/login";
-    });
-
-    const accountsList = document.getElementById("accountsList");
-
-    // Function to render a single account card
-    function renderAccount(account) {
-      accountsList.innerHTML += `
-        <div class="bg-gray-700 p-4 rounded-lg shadow-md w-full h-[150px] flex flex-col justify-between">
-          <h3 class="text-lg font-semibold truncate">${account.name}</h3>
-          <p>Balance: <span class="font-medium">₹${account.balance}</span></p>
-          <p>Type: ${account.type}</p>
-          <div class="flex justify-end space-x-2">
-            <a href="/accounts/${account.id}/edit" 
-              class="text-sm bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded">Edit</a>
-
-            <form action="/accounts/${account.id}" method="POST" onsubmit="return confirm('Are you sure?')">
-              <input type="hidden" name="_token" value="{{ csrf_token() }}">
-              <input type="hidden" name="_method" value="DELETE">
-              <button type="submit" class="text-sm bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded">
-                Delete
-              </button>
-            </form>
-          </div>
+<script>
+  function renderAccount(account) {
+    accountsList.innerHTML += `
+      <div class="bg-gray-700 p-4 rounded-lg shadow-md w-full flex flex-col justify-between">
+        <h3 class="text-lg font-semibold truncate">${account.name}</h3>
+        <p>Balance: <span class="font-medium">₹${account.balance}</span></p>
+        <p>Type: ${account.type}</p>
+        <div class="flex justify-between mt-2 space-x-2">
+          <button onclick="updateBalance(${account.id}, 'deposit')" 
+            class="text-sm bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded">Add</button>
+          <button onclick="updateBalance(${account.id}, 'withdraw')" 
+            class="text-sm bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded">Withdraw</button>
         </div>
-      `;
-    }
-    // Load all accounts on page load
-    async function loadAccounts() {
-      try {
-        let res = await fetch('/api/accounts', {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-          }
-        });
+        <div class="flex justify-end space-x-2 mt-3">
+          <a href="/accounts/${account.id}/edit" 
+            class="text-sm bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded">Edit</a>
+          <form action="/accounts/${account.id}" method="POST" onsubmit="return confirm('Are you sure?')">
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="text-sm bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded">
+              Delete
+            </button>
+          </form>
+        </div>
+      </div>
+    `;
+  }
 
-        let data = await res.json();
-
-        if (res.ok) {
-          accountsList.innerHTML = ""; // clear before adding
-          data.forEach(account => renderAccount(account));
-        } else {
-          alert("Failed to load accounts: " + JSON.stringify(data));
-        }
-      } catch (error) {
-        console.error("Error loading accounts", error);
-      }
+  async function updateBalance(accountId, action) {
+    let amount = prompt(`Enter amount to ${action}:`);
+    if (!amount || isNaN(amount) || amount <= 0) {
+      alert("Invalid amount");
+      return;
     }
 
-    // Handle form submission (Add new account)
-    document.getElementById('accountsForm').addEventListener('submit', async function(event) {
-      event.preventDefault();
-
-      // Reset errors
-      document.getElementById("nameError").classList.add("hidden");
-      document.getElementById("balanceError").classList.add("hidden");
-      document.getElementById("typeError").classList.add("hidden");
-
-      let name = document.querySelector('input[name="name"]').value.trim();
-      let balance = document.querySelector('input[name="balance"]').value.trim();
-      let type = document.querySelector('select[name="type"]').value;
-
-      let valid = true;
-
-      if (!name) {
-        document.getElementById("nameError").classList.remove("hidden");
-        valid = false;
-      }
-
-      if (!balance) {
-        document.getElementById("balanceError").classList.remove("hidden");
-        valid = false;
-      }
-
-      if (!type) {
-        document.getElementById("typeError").classList.remove("hidden");
-        valid = false;
-      }
-
-      if (!valid) return; // Stop if validation fails
-
-      let accountData = {
-        name,
-        balance,
-        type
-      };
-
-      let res = await fetch('/api/accounts', {
-        method: 'POST',
+    try {
+      let res = await fetch(`/api/accounts/${accountId}/${action}`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + token
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
         },
-        body: JSON.stringify(accountData)
+        body: JSON.stringify({ amount: amount })
       });
 
       let data = await res.json();
-
       if (res.ok) {
-        renderAccount(data);
-        document.getElementById('accountsForm').reset();
+        alert(`Amount ${action === 'deposit' ? 'added' : 'withdrawn'} successfully!`);
+        loadAccounts(); // refresh accounts list
       } else {
-        // show backend validation errors inline
-        if (data.errors) {
-          if (data.errors.name) {
-            document.getElementById("nameError").innerText = data.errors.name[0];
-            document.getElementById("nameError").classList.remove("hidden");
-          }
-          if (data.errors.balance) {
-            document.getElementById("balanceError").innerText = data.errors.balance[0];
-            document.getElementById("balanceError").classList.remove("hidden");
-          }
-          if (data.errors.type) {
-            document.getElementById("typeError").innerText = data.errors.type[0];
-            document.getElementById("typeError").classList.remove("hidden");
-          }
-        }
+        alert("Error: " + JSON.stringify(data));
       }
-    });
-
-
-    // Call loadAccounts() when page loads
-    window.onload = loadAccounts;
-  </script>
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong!");
+    }
+  }
+</script>
 
 </body>
 

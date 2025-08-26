@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
@@ -14,9 +15,13 @@ use App\Http\Controllers\GoalController;
 // Route::middleware('auth:api')->get('/dashboard-data', [DashboardController::class, 'getData']);
 
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class,'login']);
+Route::post('/login', [AuthController::class, 'login']);
+
+
+
 
 Route::middleware('auth:api')->group(function () {
+
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/refresh', [AuthController::class, 'refresh']);
@@ -27,14 +32,19 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('budgets', BudgetController::class);
     Route::apiResource('bills', BillController::class);
-    Route::apiResource('goals', GoalController::class);
-    
-Route::middleware('auth:api')->get('/profile', function () {
-    $user = Auth::user();
-    $accounts = $user->accounts;
-    return response()->json([
-        'user' => $user,
-        'accounts' => $accounts
-    ]);
-});
+    Route::apiResource('goals', GoalController::class); // in routes/api.php
+    Route::post('/accounts/{id}/deposit', [AccountController::class, 'deposit']);
+    Route::post('/accounts/{id}/withdraw', [AccountController::class, 'withdraw']);
+
+
+
+
+    Route::middleware('auth:api')->get('/profile', function () {
+        $user = Auth::user();
+        $accounts = $user->accounts;
+        return response()->json([
+            'user' => $user,
+            'accounts' => $accounts
+        ]);
+    });
 });
