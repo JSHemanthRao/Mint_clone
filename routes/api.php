@@ -36,6 +36,20 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/accounts/{id}/deposit', [AccountController::class, 'deposit']);
     Route::post('/accounts/{id}/withdraw', [AccountController::class, 'withdraw']);
 
+    // use App\Http\Controllers\BillController;
+
+    // use Illuminate\Support\Facades\Route;
+    // use App\Http\Controllers\BillController;
+
+    // Bills API (JWT protected)
+    Route::middleware('auth:api')->group(function () {
+        Route::get('/bills', [BillController::class, 'index'])->name('bills.index');
+        Route::post('/bills', [BillController::class, 'store'])->name('bills.store');
+        Route::get('/bills/{id}', [BillController::class, 'show'])->name('bills.show');
+        Route::put('/bills/{id}', [BillController::class, 'update'])->name('bills.update');
+        Route::delete('/bills/{id}', [BillController::class, 'destroy'])->name('bills.destroy');
+    });
+
 
 
 

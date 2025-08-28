@@ -151,3 +151,5 @@
 
   loadBudgets();
 </script>
+</body>
+</html>
