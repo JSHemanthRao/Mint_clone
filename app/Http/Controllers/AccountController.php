@@ -74,44 +74,27 @@ class AccountController extends Controller
     }
     public function deposit(Request $request, $id)
     {
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:1'
-        ]);
+        $request->validate(['amount' => 'required|numeric|min:1']);
 
-        // Ensure the account belongs to the logged-in user
-        $account = Account::where('id', $id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-
-        $account->balance += $validated['amount'];
+        $account = Account::findOrFail($id);
+        $account->balance += $request->amount;
         $account->save();
 
-        return response()->json([
-            'message' => 'Amount deposited successfully',
-            'account' => $account
-        ]);
+        return response()->json($account);
     }
 
     public function withdraw(Request $request, $id)
     {
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:1'
-        ]);
+        $request->validate(['amount' => 'required|numeric|min:1']);
 
-        $account = Account::where('id', $id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-
-        if ($validated['amount'] > $account->balance) {
-            return response()->json(['error' => 'Insufficient balance'], 400);
+        $account = Account::findOrFail($id);
+        if ($account->balance < $request->amount) {
+            return response()->json(['error' => 'Insufficient funds'], 400);
         }
 
-        $account->balance -= $validated['amount'];
+        $account->balance -= $request->amount;
         $account->save();
 
-        return response()->json([
-            'message' => 'Amount withdrawn successfully',
-            'account' => $account
-        ]);
+        return response()->json($account);
     }
 }

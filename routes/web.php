@@ -10,7 +10,9 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\UserController; 
 
 
-Route::get('/profile', [UserController::class, 'showProfile'])->name('profile');
+Route::get('/profile', function () {
+    return view('profile');
+})->name('profile');
 
 
 Route::view('/', 'register');

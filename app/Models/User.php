@@ -1,10 +1,6 @@
 <?php
 
 namespace App\Models;
-use App\Models\Account;
-/**
- * @property \Illuminate\Database\Eloquent\Collection|\App\Models\Account[] $accounts
- */
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -67,9 +63,14 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-
+    // User.php
     public function accounts()
     {
-        return $this->hasMany(Account::class,'user_id');
+        return $this->hasMany(Account::class);
+    }
+
+    public function bills()
+    {
+        return $this->hasMany(Bill::class);
     }
 }
