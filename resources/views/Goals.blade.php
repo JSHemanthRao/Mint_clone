@@ -13,7 +13,7 @@
   <!-- Navbar -->
   <header class="bg-gray-900/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-     <a href="/" class="text-2xl font-bold text-green-400">Mint Clone</a>
+      <a href="/" class="text-2xl font-bold text-green-400">Mint Clone</a>
       <nav class="flex space-x-6">
         <a href="{{ route('dashboard') }}" class="hover:text-green-400 font-semibold">Dashboard</a>
         <a href="{{ route('accounts') }}" class="hover:text-green-400 font-semibold">Accounts</a>
@@ -73,101 +73,132 @@
   </main>
 
   <script>
-  const token = localStorage.getItem("jwt_token");
-  if (!token) {
-    window.location.href = "/login";
-  }
-
-  // Logout
-  document.getElementById("logoutBtn").addEventListener("click", async function () {
-    localStorage.removeItem("jwt_token");
-    window.location.href = "/login";
-  });
-
-  // Load all goals
-  async function loadGoals() {
-    try {
-      let res = await fetch('/api/goals', {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + token
-        }
-      });
-
-      let data = await res.json();
-      console.log("Load Goals Response:", data); // 👈 Debugging
-
-      if (res.ok) {
-        let goalsList = document.getElementById('goalsList');
-        goalsList.innerHTML = "";
-        data.forEach(goal => {
-          goalsList.innerHTML += `
-            <div class="bg-gray-800 p-5 rounded-xl shadow hover:shadow-lg transition">
-              <h3 class="text-lg font-semibold mb-2">${goal.name}</h3>
-              <p>Target: <span class="font-medium">₹${goal.target_amount}</span></p>
-              <p>Current: <span class="font-medium">₹${goal.current_amount}</span></p>
-              <p>Due Date: <span class="font-medium">${goal.due_date}</span></p>
-            </div>
-          `;
-        });
-      } else {
-        alert('Failed to load goals: ' + JSON.stringify(data));
-      }
-    } catch (err) {
-      console.error("Network/Server error while loading goals:", err);
+    const token = localStorage.getItem("jwt_token");
+    if (!token) {
+      window.location.href = "/login";
     }
-  }
 
-  // Handle form submit
-  document.getElementById('goalsForm').addEventListener('submit', async function (event) {
-    event.preventDefault();
-
-    // clear old errors
-    document.querySelectorAll('[id^="error-"]').forEach(el => {
-      el.textContent = "";
-      el.classList.add("hidden");
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", async function () {
+      localStorage.removeItem("jwt_token");
+      window.location.href = "/login";
     });
 
-    let goalData = {
-      name: document.querySelector('input[name="name"]').value,
-      target_amount: document.querySelector('input[name="target_amount"]').value,
-      current_amount: document.querySelector('input[name="current_amount"]').value,
-      due_date: document.querySelector('input[name="due_date"]').value
-    };
+    // Load all goals
+    async function loadGoals() {
+      try {
+        let res = await fetch('/api/goals', {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token
+          }
+        });
 
-    try {
-      let res = await fetch('/api/goals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify(goalData)
+        let data = await res.json();
+        console.log("Load Goals Response:", data);
+
+        if (res.ok) {
+          let goalsList = document.getElementById('goalsList');
+          goalsList.innerHTML = "";
+          data.forEach(goal => {
+            goalsList.innerHTML += `
+              <div class="bg-gray-800 p-5 rounded-xl shadow hover:shadow-lg transition flex flex-col justify-between">
+                <div>
+                  <h3 class="text-lg font-semibold mb-2">${goal.name}</h3>
+                  <p>Target: <span class="font-medium">₹${goal.target_amount}</span></p>
+                  <p>Current: <span class="font-medium">₹${goal.current_amount}</span></p>
+                  <p>Due Date: <span class="font-medium">${goal.due_date}</span></p>
+                </div>
+                <button onclick="deleteGoal(${goal.id})"
+                  class="mt-4 w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg text-white font-medium">
+                  Delete Goal
+                </button>
+              </div>
+            `;
+          });
+        } else {
+          alert('Failed to load goals: ' + JSON.stringify(data));
+        }
+      } catch (err) {
+        console.error("Network/Server error while loading goals:", err);
+      }
+    }
+
+    // Handle form submit
+    document.getElementById('goalsForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      // clear old errors
+      document.querySelectorAll('[id^="error-"]').forEach(el => {
+        el.textContent = "";
+        el.classList.add("hidden");
       });
 
-      let data = await res.json();
-      console.log("Save Goal Response:", data); // 👈 Debugging
+      let goalData = {
+        name: document.querySelector('input[name="name"]').value,
+        target_amount: document.querySelector('input[name="target_amount"]').value,
+        current_amount: document.querySelector('input[name="current_amount"]').value,
+        due_date: document.querySelector('input[name="due_date"]').value
+      };
 
-      if (res.ok) {
-        document.getElementById('goalsForm').reset();
-        loadGoals();
-      } else if (data.errors) {
-        // show inline validation errors
-        for (let field in data.errors) {
-          let errorElement = document.getElementById(`error-${field}`);
-          if (errorElement) {
-            errorElement.textContent = data.errors[field][0];
-            errorElement.classList.remove("hidden");
+      try {
+        let res = await fetch('/api/goals', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(goalData)
+        });
+
+        let data = await res.json();
+        console.log("Save Goal Response:", data);
+
+        if (res.ok) {
+          document.getElementById('goalsForm').reset();
+          loadGoals();
+        } else if (data.errors) {
+          // show inline validation errors
+          for (let field in data.errors) {
+            let errorElement = document.getElementById(`error-${field}`);
+            if (errorElement) {
+              errorElement.textContent = data.errors[field][0];
+              errorElement.classList.remove("hidden");
+            }
           }
+        } else {
+          alert("Failed to save goal: " + (data.error || JSON.stringify(data)));
         }
-      } else {
-        alert("Failed to save goal: " + (data.error || JSON.stringify(data)));
+      } catch (err) {
+        console.error("Network/Server error while saving goal:", err);
       }
-    } catch (err) {
-      console.error("Network/Server error while saving goal:", err);
-    }
-  });
+    });
 
-  window.onload = loadGoals;
-</script>
+    // Delete goal
+    async function deleteGoal(id) {
+      if (!confirm("Are you sure you want to delete this goal?")) return;
+      try {
+        let res = await fetch(`/api/goals/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token
+          }
+        });
+
+        if (res.ok) {
+          loadGoals();
+        } else {
+          let data = await res.json();
+          alert("Failed to delete goal: " + (data.error || JSON.stringify(data)));
+        }
+      } catch (err) {
+        console.error("Network/Server error while deleting goal:", err);
+      }
+    }
+
+    window.onload = loadGoals;
+  </script>
+</body>
+</html>

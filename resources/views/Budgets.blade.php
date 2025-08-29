@@ -10,7 +10,7 @@
 
 <body class="bg-gray-900 text-gray-100 min-h-screen flex-col lg:flex-col">
 
-  <!-- Sidebar Navbar -->
+  <!-- Navbar -->
   <header class="bg-gray-900/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <a href="/" class="text-2xl font-bold text-green-400">Mint Clone</a>
@@ -26,7 +26,6 @@
       <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
     </div>
   </header>
-
 
   <!-- Main Content -->
   <main class="ml-64 flex-1 p-8 space-y-8">
@@ -69,7 +68,7 @@
   <!-- Popup Notification -->
   <div id="popupNotification"
     class="hidden fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-y-4 opacity-0 transition-all duration-500 ease-in-out">
-    Budget created successfully 
+    Budget created successfully
   </div>
 
   <script>
@@ -81,14 +80,21 @@
     const budgetsList = document.getElementById("budgetsList");
 
     function renderBudget(budget) {
-      budgetsList.innerHTML += `
-        <div class="bg-gray-700 p-5 rounded-xl shadow-md w-full h-40 flex flex-col justify-between hover:shadow-xl transition">
-          <div>
-            <h3 class="text-lg font-semibold text-white">${budget.category?.name ?? 'Unknown Category'}</h3>
-            <p class="mt-2 text-gray-300">Amount: ₹${budget.amount}</p>
-          </div>
+      const card = document.createElement("div");
+      card.className = "bg-gray-700 p-5 rounded-xl shadow-md w-full h-44 flex flex-col justify-between hover:shadow-xl transition";
+
+      card.innerHTML = `
+        <div>
+          <h3 class="text-lg font-semibold text-white">${budget.category?.name ?? 'Unknown Category'}</h3>
+          <p class="mt-2 text-gray-300">Amount: ₹${budget.amount}</p>
         </div>
+        <button onclick="deleteBudget(${budget.id}, this)"
+          class="mt-3 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm">
+          Delete Budget
+        </button>
       `;
+
+      budgetsList.appendChild(card);
     }
 
     function showPopup(message) {
@@ -123,6 +129,30 @@
         }
       } catch (error) {
         console.error("Error loading budgets", error);
+      }
+    }
+
+    async function deleteBudget(id, btn) {
+      if (!confirm("Are you sure you want to delete this budget?")) return;
+
+      try {
+        let res = await fetch(`/api/budgets/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Accept": "application/json",
+            "Authorization": "Bearer " + token
+          }
+        });
+
+        if (res.ok) {
+          btn.closest("div").remove();
+          showPopup("Budget deleted successfully!");
+        } else {
+          let error = await res.json();
+          alert("Failed to delete budget: " + (error.message ?? "Unknown error"));
+        }
+      } catch (err) {
+        console.error("Error deleting budget:", err);
       }
     }
 

@@ -79,7 +79,6 @@
     <div class="w-full max-w-5xl bg-gray-700/90 backdrop-blur-lg p-6 rounded-2xl shadow-lg">
       <h2 class="text-2xl font-semibold text-center mb-6">Transactions List</h2>
       <div id="transactionsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Transactions will be dynamically loaded here -->
       </div>
     </div>
   </main>
@@ -99,120 +98,141 @@
     // Load Transactions List
     async function loadTransactions() {
       try {
-          let res = await fetch('/api/transactions', {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-              'Authorization': 'Bearer ' + token
-            }
-          });
+        let res = await fetch('/api/transactions', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token
+          }
+        });
 
-          let transactions = await res.json();
+        let transactions = await res.json();
 
-          if (res.ok) {
-            let list = document.getElementById('transactionsList');
-            list.innerHTML = ""; // Clear before populating
+        if (res.ok) {
+          let list = document.getElementById('transactionsList');
+          list.innerHTML = ""; // Clear before populating
 
-            transactions.forEach(data => {
-              list.innerHTML += `
-              <div class="bg-gray-800 p-5 rounded-xl shadow-md w-full">
+          transactions.forEach(data => {
+            list.innerHTML += `
+              <div class="bg-gray-800 p-5 rounded-xl shadow-md w-full relative">
+                <button onclick="deleteTransaction(${data.id})" 
+                  class="absolute top-3 right-3 text-red-500 hover:text-red-700 font-bold">✖</button>
                 <h3 class="text-lg font-semibold">${data.description}</h3>
                 <p class="text-gray-300">Amount: ₹${data.amount}</p>
                 <p class="text-gray-300">Date: ${data.date}</p>
                 <p class="text-gray-400 text-sm">Category: ${data.category ? data.category.name : "N/A"}</p>
                 <p class="text-gray-400 text-sm">Account: ${data.account ? data.account.name : "N/A"}</p>
-                <p class="text-gray-400 text-sm">Account Type: ${data.account.type ? data.account.type : "N/A"}</p>
+                <p class="text-gray-400 text-sm">Account Type: ${data.account?.type || "N/A"}</p>
               </div>
             `;
-            });
-          } else {
-            console.error("Transactions fetch failed:", transactions);
+          });
+        } else {
+          console.error("Transactions fetch failed:", transactions);
+        }
+      } catch (error) {
+        console.error("Error loading transactions:", error);
+      }
+    }
+
+    // Delete Transaction
+    async function deleteTransaction(id) {
+      if (!confirm("Are you sure you want to delete this transaction?")) return;
+
+      try {
+        let res = await fetch(`/api/transactions/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token
           }
-      } catch(error) {
-          console.error("Error loading transactions:", error);
+        });
+
+        if (res.ok) {
+          loadTransactions(); // Reload list after delete
+        } else {
+          let err = await res.json();
+          console.error("Delete failed:", err);
+        }
+      } catch (error) {
+        console.error("Error deleting transaction:", error);
       }
     }
 
     // Load Accounts
     async function loadAccounts() {
-        try {
-            let res = await fetch('/api/accounts', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
-            });
-            let accounts = await res.json();
-            if (res.ok) {
-                const select = document.getElementById('account_id_select');
-                select.innerHTML = '<option value="">-- Select Account --</option>';
-                accounts.forEach(account => {
-                    select.innerHTML += `<option value="${account.id}">${account.name}</option>`;
-                });
-            } else {
-                console.error("Accounts fetch failed:", accounts);
-            }
-        } catch (error) {
-            console.error("Error loading accounts", error);
+      try {
+        let res = await fetch('/api/accounts', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token
+          }
+        });
+        let accounts = await res.json();
+        if (res.ok) {
+          const select = document.getElementById('account_id_select');
+          select.innerHTML = '<option value="">-- Select Account --</option>';
+          accounts.forEach(account => {
+            select.innerHTML += `<option value="${account.id}">${account.name}</option>`;
+          });
+        } else {
+          console.error("Accounts fetch failed:", accounts);
         }
-    }
-
-    // Handle Transaction Form Submit
-    // Handle Transaction Form Submit
-document.getElementById('transactionsForm').addEventListener('submit', async function (event) {
-  event.preventDefault();
-
-  // Clear old errors
-  document.querySelectorAll('[id^="error-"]').forEach(el => {
-    el.textContent = "";
-    el.classList.add("hidden");
-  });
-
-  let transactionData = {
-    account_id: document.querySelector('select[name="account_id"]').value,
-    category_id: document.querySelector('select[name="category_id"]').value,
-    description: document.querySelector('input[name="description"]').value,
-    amount: document.querySelector('input[name="amount"]').value,
-    date: document.querySelector('input[name="date"]').value
-  };
-
-  let res = await fetch('/api/transactions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': 'Bearer ' + token
-    },
-    body: JSON.stringify(transactionData)
-  });
-
-  let data = await res.json();
-
-  if (res.ok) {
-    document.getElementById('transactionsForm').reset();
-    loadTransactions();
-  } else if (data.errors) {
-    // Show inline validation errors
-    for (let field in data.errors) {
-      let errorEl = document.getElementById(`error-${field}`);
-      if (errorEl) {
-        errorEl.textContent = data.errors[field][0];
-        errorEl.classList.remove("hidden");
+      } catch (error) {
+        console.error("Error loading accounts", error);
       }
     }
-  }
-});
 
+    // Handle Transaction Form Submit
+    document.getElementById('transactionsForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      // Clear old errors
+      document.querySelectorAll('[id^="error-"]').forEach(el => {
+        el.textContent = "";
+        el.classList.add("hidden");
+      });
+
+      let transactionData = {
+        account_id: document.querySelector('select[name="account_id"]').value,
+        category_id: document.querySelector('select[name="category_id"]').value,
+        description: document.querySelector('input[name="description"]').value,
+        amount: document.querySelector('input[name="amount"]').value,
+        date: document.querySelector('input[name="date"]').value
+      };
+
+      let res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(transactionData)
+      });
+
+      let data = await res.json();
+
+      if (res.ok) {
+        document.getElementById('transactionsForm').reset();
+        loadTransactions();
+      } else if (data.errors) {
+        // Show inline validation errors
+        for (let field in data.errors) {
+          let errorEl = document.getElementById(`error-${field}`);
+          if (errorEl) {
+            errorEl.textContent = data.errors[field][0];
+            errorEl.classList.remove("hidden");
+          }
+        }
+      }
+    });
 
     // Initialize page
     window.onload = () => {
-        loadAccounts();
-        loadTransactions();
+      loadAccounts();
+      loadTransactions();
     };
-</script>
-
-
+  </script>
 </body>
-
 </html>
