@@ -12,7 +12,7 @@
 
   <header class="bg-gray-900/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-green-400">Mint Clone</h1>
+      <a href="/" class="text-2xl font-bold text-green-400">Mint Clone</a>
       <nav class="flex space-x-6">
         <a href="{{ route('dashboard') }}" class="hover:text-green-400">Dashboard</a>
         <a href="{{ route('accounts') }}" class="hover:text-green-400">Accounts</a>

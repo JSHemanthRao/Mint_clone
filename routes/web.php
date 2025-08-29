@@ -15,7 +15,8 @@ Route::get('/profile', function () {
 })->name('profile');
 
 
-Route::view('/', 'register');
+Route::view('/register', 'register');
+Route::view('/', 'home');
 
 Route::view('/login', 'login');
 
