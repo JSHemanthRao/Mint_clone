@@ -42,7 +42,7 @@
 
       <form id="accountForm" class="space-y-5">
         <div>
-          <label for="name" class="block mb-2">Account Name</label>
+          <label for="name" class="block mb-2">Bank Name</label>
           <input type="text" id="name" name="name" required
             class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:border-yellow-400 focus:ring focus:ring-yellow-400 focus:ring-opacity-50">
         </div>
