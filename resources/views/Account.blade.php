@@ -8,9 +8,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col lg:flex-col">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex lg:flex-col">
 
-  <!-- Navbar -->
   <header class="bg-gray-900/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <h1 class="text-2xl font-bold text-green-400">Mint Clone</h1>
@@ -28,63 +27,63 @@
   </header>
 
   <!-- Main Content -->
-  <div class="flex-1 ml-64 p-8 space-y-10">
+  <main class="flex-1 p-4 sm:p-6 space-y-6 lg:ml-64">
+    <h2 class="text-2xl font-bold mb-4">Welcome!</h2>
+
+    <!-- Accounts Section -->
+    <div>
+      <h3 class="text-xl font-semibold mb-2">Your Accounts</h3>
+      <div id="accountsList" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </div>
 
     <!-- Create Account Form -->
-    <div class="flex justify-center">
-      <form id="accountForm" class="max-w-md w-full bg-gray-900 shadow-lg rounded-2xl p-6 space-y-4 border border-gray-700">
-        @csrf
-        <h2 class="text-2xl font-semibold text-white text-center">Create New Account</h2>
+    <div class="bg-gray-800/90 backdrop-blur-lg p-6 rounded-2xl shadow-lg w-full max-w-md">
+      <h2 class="text-2xl font-bold mb-6 text-center">Create Account</h2>
 
+      <form id="accountForm" class="space-y-5">
         <div>
-          <label for="name" class="block text-gray-300 mb-1 font-medium">Account Name</label>
-          <input type="text" name="name" id="name" placeholder="e.g. Salary Account" autocomplete="off"
-            class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+          <label for="name" class="block mb-2">Account Name</label>
+          <input type="text" id="name" name="name" required
+            class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:border-yellow-400 focus:ring focus:ring-yellow-400 focus:ring-opacity-50">
         </div>
 
         <div>
-          <label for="type" class="block text-gray-300 mb-1 font-medium">Account Type</label>
-          <select name="type" id="type"
-            class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required>
-            <option value="" disabled selected>-- Select Account Type --</option>
-            <option value="Savings">Savings</option>
-            <option value="Current">Current</option>
-            <option value="Business">Business</option>
-            <option value="Joint">Joint</option>
+          <label for="type" class="block mb-2">Account Type</label>
+          <select id="type" name="type" required
+            class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:border-yellow-400 focus:ring focus:ring-yellow-400 focus:ring-opacity-50">
+            <option value="savings">Savings</option>
+            <option value="current">Current</option>
+            <option value="credit">Credit</option>
           </select>
         </div>
 
         <div>
-          <label for="balance" class="block text-gray-300 mb-1 font-medium">Balance</label>
-          <input type="number" name="balance" id="balance" placeholder="Enter balance" autocomplete="off"
-            class="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+          <label for="balance" class="block mb-2">Initial Balance</label>
+          <input type="number" id="balance" name="balance" required step="0.01"
+            class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:border-yellow-400 focus:ring focus:ring-yellow-400 focus:ring-opacity-50">
         </div>
 
         <button type="submit"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg shadow-md transition duration-200">
+          class="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-lg shadow-md">
           Save Account
         </button>
       </form>
     </div>
 
-    <!-- Accounts List -->
-    <div id="accountsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Accounts will be dynamically injected here -->
+    <!-- Toast Notification -->
+    <div id="successToast"
+      class="hidden fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
+      Account created successfully!
     </div>
-
-  </div>
-
-  <!-- Toast -->
-  <div id="successToast"
-    class="hidden fixed top-0 left-1/2 transform -translate-x-1/2 mt-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg text-lg font-semibold transition-all duration-500">
-    Account created successfully!
-  </div>
+  </main>
 
   <!-- Script -->
   <script>
     let accountsList = document.getElementById("accountsList");
+    let accountForm = document.getElementById("accountForm");
+    let successToast = document.getElementById("successToast");
 
+    // ✅ Load Accounts
     async function loadAccounts() {
       accountsList.innerHTML = "";
       let token = localStorage.getItem("jwt_token");
@@ -103,6 +102,7 @@
       }
     }
 
+    // ✅ Render Account Card
     function renderAccount(account) {
       accountsList.innerHTML += `
         <div class="bg-gray-700 p-4 rounded-lg shadow-md flex flex-col justify-between">
@@ -132,9 +132,10 @@
       `;
     }
 
+    // ✅ Handle Deposit/Withdraw
     async function updateBalance(accountId, action) {
       let token = localStorage.getItem("jwt_token");
-      let amount = prompt(`Enter amount to ${action}:`);
+      let amount = parseFloat(prompt(`Enter amount to ${action}:`));
 
       if (!amount || isNaN(amount) || amount <= 0) {
         alert("Invalid amount");
@@ -153,7 +154,6 @@
 
         let data = await res.json();
         if (res.ok) {
-          alert(`Amount ${action === 'deposit' ? 'added' : 'withdrawn'} successfully!`);
           loadAccounts();
         } else {
           alert("Error: " + (data.error || JSON.stringify(data)));
@@ -164,7 +164,52 @@
       }
     }
 
+    // ✅ Handle Create Account Form
+    accountForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      let token = localStorage.getItem("jwt_token");
+
+      let formData = {
+        name: document.getElementById("name").value,
+        type: document.getElementById("type").value,
+        balance: document.getElementById("balance").value,
+      };
+
+      try {
+        let res = await fetch("/api/accounts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify(formData)
+        });
+
+        let data = await res.json();
+        if (res.ok) {
+          accountForm.reset();
+          showToast("Account created successfully!");
+          loadAccounts();
+        } else {
+          alert("Error: " + (data.error || JSON.stringify(data)));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong!");
+      }
+    });
+
+    // ✅ Toast function
+    function showToast(message) {
+      successToast.innerText = message;
+      successToast.classList.remove("hidden");
+      setTimeout(() => {
+        successToast.classList.add("hidden");
+      }, 3000);
+    }
+
     document.addEventListener("DOMContentLoaded", loadAccounts);
   </script>
 </body>
+
 </html>
