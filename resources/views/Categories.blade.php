@@ -13,13 +13,13 @@
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <a href="/" class="text-2xl font-bold text-green-400">Mint Clone</a>
       <nav class="flex space-x-6">
-        <a href="{{ route('dashboard') }}" class="hover:text-green-400">Dashboard</a>
-        <a href="{{ route('accounts') }}" class="hover:text-green-400">Accounts</a>
-        <a href="{{ route('bills') }}" class="text-green-400 font-semibold">Bills</a>
-        <a href="{{ route('budgets') }}" class="hover:text-green-400">Budgets</a>
-        <a href="{{ route('categories') }}" class="hover:text-green-400">Categories</a>
-        <a href="{{ route('transactions') }}" class="hover:text-green-400">Transactions</a>
-        <a href="{{ route('goals') }}" class="hover:text-green-400">Goals</a>
+        <a href="{{ route('dashboard') }}" class="hover:text-green-400 font-semibold">Dashboard</a>
+        <a href="{{ route('accounts') }}" class="hover:text-green-400 font-semibold">Accounts</a>
+        <a href="{{ route('bills') }}" class="hover:text-green-400 font-semibold">Bills</a>
+        <a href="{{ route('budgets') }}" class="hover:text-green-400 font-semibold">Budgets</a>
+        <a href="{{ route('categories') }}" class="hover:text-green-400 font-semibold">Categories</a>
+        <a href="{{ route('transactions') }}" class="hover:text-green-400 font-semibold">Transactions</a>
+        <a href="{{ route('goals') }}" class="hover:text-green-400 font-semibold">Goals</a>
       </nav>
       <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
     </div>
