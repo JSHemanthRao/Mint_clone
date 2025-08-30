@@ -124,6 +124,17 @@
           el.classList.remove("hidden");
         }
       }
+      if (localStorage.getItem("token")) {
+      window.location.href = "/dashboard";
+    }
+
+    // Fake register logic (replace with API call)
+    document.getElementById("registerForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      localStorage.setItem("token", "fake-jwt-token");
+      window.location.href = "/dashboard";
+    });
+    
     });
   </script>
 

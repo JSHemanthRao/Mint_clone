@@ -15,14 +15,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16 items-center">
         <a href="/" class="text-xl font-bold text-green-400">MintClone</a>
-        <!-- <div class="hidden md:flex space-x-6">
-          <a href="accounts.html" class="hover:text-green-400">Accounts</a>
-          <a href="budgets.html" class="hover:text-green-400">Budgets</a>
-          <a href="goals.html" class="hover:text-green-400">Goals</a>
-          <a href="transactions.html" class="hover:text-green-400">Transactions</a>
-          <a href="about.html" class="hover:text-green-400">About</a>
-          <a href="contact.html" class="hover:text-green-400">Contact</a>
-        </div> -->
+
+        <!-- Buttons that will toggle based on login -->
+        <div id="authButtons" class="flex space-x-4"></div>
       </div>
     </div>
   </nav>
@@ -35,16 +30,7 @@
     <p class="text-lg text-gray-400 mb-8 max-w-2xl">
       Track accounts, manage budgets, set goals, and monitor transactions all in one place.
     </p>
-    <div class="flex space-x-4">
-      <a href="/register"
-        class="px-6 py-3 rounded-xl bg-green-500 text-white font-medium hover:bg-green-600 transition">
-        Get Started
-      </a>
-      <a href="login"
-        class="px-6 py-3 rounded-xl bg-gray-700 text-white font-medium hover:bg-gray-600 transition">
-        Login
-      </a>
-    </div>
+    <div id="heroButtons" class="flex space-x-4"></div>
   </header>
 
   <!-- Features Section -->
@@ -70,6 +56,39 @@
     <p>&copy; 2025 MintClone. All rights reserved.</p>
   </footer>
 
-</body>
+  <!-- Script to handle auth logic -->
+  <script>
+    const token = localStorage.getItem("token");
+    const authButtons = document.getElementById("authButtons");
+    const heroButtons = document.getElementById("heroButtons");
 
+    if (token) {
+      // User logged in
+      authButtons.innerHTML = `
+        <a href="/dashboard" class="px-4 py-2 rounded-lg bg-green-500 text-white font-medium hover:bg-green-600 transition">Dashboard</a>
+        <button id="logoutBtn" class="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition">Logout</button>
+      `;
+
+      heroButtons.innerHTML = `
+        <a href="/dashboard" class="px-6 py-3 rounded-xl bg-green-500 text-white font-medium hover:bg-green-600 transition">Go to Dashboard</a>
+      `;
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("token");
+        window.location.href = "/";
+      });
+    } else {
+      // User not logged in
+      authButtons.innerHTML = `
+        <a href="/login" class="px-4 py-2 rounded-lg bg-gray-700 text-white font-medium hover:bg-gray-600 transition">Login</a>
+        <a href="/register" class="px-4 py-2 rounded-lg bg-green-500 text-white font-medium hover:bg-green-600 transition">Register</a>
+      `;
+
+      heroButtons.innerHTML = `
+        <a href="/register" class="px-6 py-3 rounded-xl bg-green-500 text-white font-medium hover:bg-green-600 transition">Get Started</a>
+        <a href="/login" class="px-6 py-3 rounded-xl bg-gray-700 text-white font-medium hover:bg-gray-600 transition">Login</a>
+      `;
+    }
+  </script>
+</body>
 </html>

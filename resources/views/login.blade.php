@@ -59,6 +59,8 @@
       let password = document.getElementById('login_password').value.trim();
       let hasError = false;
 
+
+
       // Client-side validation
       if (!email) {
         document.getElementById('emailError').textContent = "Email is required.";
@@ -98,6 +100,17 @@
           data.error || "Login failed. Please check credentials.";
         document.getElementById('generalError').classList.remove('hidden');
       }
+
+      if (localStorage.getItem("token")) {
+      window.location.href = "/dashboard";
+    }
+
+    // Fake login logic (replace with API call)
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      localStorage.setItem("token", "fake-jwt-token");
+      window.location.href = "/dashboard";
+    });
       
     });
   </script>
