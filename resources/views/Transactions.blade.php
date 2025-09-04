@@ -89,13 +89,13 @@
       window.location.href = "/login";
     }
 
-    // Logout
+    
     document.getElementById("logoutBtn").addEventListener("click", async function() {
       localStorage.removeItem("jwt_token");
       window.location.href = "/login";
     });
 
-    // Load Transactions List
+    
     async function loadTransactions() {
       try {
         let res = await fetch('/api/transactions', {
@@ -110,13 +110,13 @@
 
         if (res.ok) {
           let list = document.getElementById('transactionsList');
-          list.innerHTML = ""; // Clear before populating
+          list.innerHTML = ""; 
 
           transactions.forEach(data => {
             list.innerHTML += `
               <div class="bg-gray-800 p-5 rounded-xl shadow-md w-full relative">
                 <button onclick="deleteTransaction(${data.id})" 
-                  class="absolute top-3 right-3 text-red-500 hover:text-red-700 font-bold">✖</button>
+                  // class="absolute top-3 right-3 text-red-500 hover:text-red-700 font-bold"></button>
                 <h3 class="text-lg font-semibold">${data.description}</h3>
                 <p class="text-gray-300">Amount: ₹${data.amount}</p>
                 <p class="text-gray-300">Date: ${data.date}</p>

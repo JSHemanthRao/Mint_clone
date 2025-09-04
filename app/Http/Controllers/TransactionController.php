@@ -110,20 +110,20 @@ class TransactionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        $transaction = Transaction::find($id);
-        if (!$transaction) {
-            return response()->json(['message' => 'Transaction not found'], 404);
-        }
+    // public function destroy(string $id)
+    // {
+    //     $transaction = Transaction::find($id);
+    //     if (!$transaction) {
+    //         return response()->json(['message' => 'Transaction not found'], 404);
+    //     }
 
-        // Ensure the transaction belongs to the authenticated user
-        $accountIds = Auth::user()->accounts()->pluck('id');
-        if (!$accountIds->contains($transaction->account_id)) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+    //     // Ensure the transaction belongs to the authenticated user
+    //     $accountIds = Auth::user()->accounts()->pluck('id');
+    //     if (!$accountIds->contains($transaction->account_id)) {
+    //         return response()->json(['message' => 'Unauthorized'], 403);
+    //     }
 
-        $transaction->delete();
-        return response()->json(['message' => 'Transaction deleted']);
-    }
+    //     $transaction->delete();
+    //     return response()->json(['message' => 'Transaction deleted']);
+    // }
 }
