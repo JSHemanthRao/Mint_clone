@@ -54,49 +54,31 @@
 
     <!-- Accounts -->
     <section>
-      <h3 class="text-xl font-semibold mb-2">Accounts</h3>
-      <form id="accountForm" class="space-x-2 flex mb-4">
-        <input type="text" name="name" placeholder="Account Name" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <input type="text" name="type" placeholder="Type" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <input type="number" name="balance" placeholder="Balance" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <button class="bg-green-600 px-4 rounded">Add</button>
-      </form>
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-xl font-semibold">Accounts</h3>
+        <!-- Eye Button -->
+        <button id="toggleBalance" class="p-2 hover:bg-gray-700 rounded-full">
+          <i data-feather="eye" class="w-5 h-5"></i>
+        </button>
+      </div>
       <div id="accountsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
 
     <!-- Bills -->
     <section>
       <h3 class="text-xl font-semibold mb-2">Bills</h3>
-      <form id="billForm" class="space-x-2 flex mb-4">
-        <input type="text" name="name" placeholder="Bill Name" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <input type="number" name="amount" placeholder="Amount" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <input type="date" name="due_date" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <button class="bg-green-600 px-4 rounded">Add</button>
-      </form>
       <div id="billsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
 
     <!-- Budgets -->
     <section>
       <h3 class="text-xl font-semibold mb-2">Budgets</h3>
-      <form id="budgetForm" class="space-x-2 flex mb-4">
-        <input type="text" name="category" placeholder="Category" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <input type="number" name="amount" placeholder="Amount" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <button class="bg-green-600 px-4 rounded">Add</button>
-      </form>
       <div id="budgetsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
 
     <!-- Goals -->
     <section>
       <h3 class="text-xl font-semibold mb-2">Goals</h3>
-      <form id="goalForm" class="space-x-2 flex mb-4">
-        <input type="text" name="name" placeholder="Goal Name" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <input type="number" name="target_amount" placeholder="Target" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <input type="number" name="current_amount" placeholder="Current" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <input type="date" name="due_date" class="p-2 rounded bg-gray-700 border border-gray-600">
-        <button class="bg-green-600 px-4 rounded">Add</button>
-      </form>
       <div id="goalsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
   </main>
@@ -162,18 +144,6 @@
       data.forEach(item => container.appendChild(renderCard(item)));
     }
 
-    async function createItem(endpoint, payload, onSuccessMsg, reloadFn) {
-      const res = await fetch(`/api/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        addNotification(onSuccessMsg);
-        reloadFn();
-      }
-    }
-
     async function deleteItem(endpoint, id, onSuccessMsg, reloadFn) {
       if (!confirm("Are you sure?")) return;
       const res = await fetch(`/api/${endpoint}/${id}`, {
@@ -187,32 +157,31 @@
     }
 
     /* ------------------- Accounts ------------------- */
-    document.getElementById("accountForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const f = e.target;
-      createItem("accounts", { name: f.name.value, type: f.type.value, balance: f.balance.value },
-        "Account added", loadAccounts);
-      f.reset();
-    });
+    let showBalance = false; // default hidden
+
     function loadAccounts() {
       fetchItems("accounts", "accountsList", (acc) => {
         const div = document.createElement("div");
         div.className = "bg-gray-800 p-4 rounded shadow";
-        div.innerHTML = `<h4>${acc.name}</h4><p>${acc.type}</p><p>₹${acc.balance}</p>
+        div.innerHTML = `
+          <h4>${acc.name}</h4>
+          <p>${acc.type}</p>
+          <p class="font-bold">${showBalance ? "₹" + acc.balance : "•••••"}</p>
           <button class="bg-red-600 px-2 py-1 rounded mt-2">Delete</button>`;
         div.querySelector("button").onclick = () => deleteItem("accounts", acc.id, "Account deleted", loadAccounts);
         return div;
       });
     }
 
-    /* ------------------- Bills ------------------- */
-    document.getElementById("billForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const f = e.target;
-      createItem("bills", { name: f.name.value, amount: f.amount.value, due_date: f.due_date.value },
-        "Bill added", loadBills);
-      f.reset();
+    document.getElementById("toggleBalance").addEventListener("click", () => {
+      showBalance = !showBalance;
+      const icon = document.querySelector("#toggleBalance i");
+      icon.setAttribute("data-feather", showBalance ? "eye-off" : "eye");
+      feather.replace();
+      loadAccounts();
     });
+
+    /* ------------------- Bills ------------------- */
     function loadBills() {
       fetchItems("bills", "billsList", (bill) => {
         const div = document.createElement("div");
@@ -225,13 +194,6 @@
     }
 
     /* ------------------- Budgets ------------------- */
-    document.getElementById("budgetForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const f = e.target;
-      createItem("budgets", { category: f.category.value, amount: f.amount.value },
-        "Budget added", loadBudgets);
-      f.reset();
-    });
     function loadBudgets() {
       fetchItems("budgets", "budgetsList", (budget) => {
         const div = document.createElement("div");
@@ -244,15 +206,6 @@
     }
 
     /* ------------------- Goals ------------------- */
-    document.getElementById("goalForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const f = e.target;
-      createItem("goals", {
-        name: f.name.value, target_amount: f.target_amount.value,
-        current_amount: f.current_amount.value, due_date: f.due_date.value
-      }, "Goal added", loadGoals);
-      f.reset();
-    });
     function loadGoals() {
       fetchItems("goals", "goalsList", (goal) => {
         const div = document.createElement("div");
