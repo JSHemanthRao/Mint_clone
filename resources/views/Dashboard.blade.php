@@ -22,7 +22,7 @@
         <a href="{{ route('transactions') }}" class="hover:text-green-400 font-semibold">Transactions</a>
         <a href="{{ route('goals') }}" class="hover:text-green-400 font-semibold">Goals</a>
 
-        <!-- Notification Bell -->
+        
         <div class="relative">
           <button id="notificationBtn" class="p-2 hover:bg-gray-700 rounded-full relative">
             <i data-feather="bell" class="w-5 h-5"></i>
@@ -30,7 +30,7 @@
               class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full hidden"></span>
           </button>
 
-          <!-- Notification Dropdown -->
+          
           <div id="notificationDropdown"
             class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
             <div class="p-4 border-b border-gray-700">
@@ -48,42 +48,36 @@
     </div>
   </header>
 
-  <!-- Main Content -->
+ 
   <main class="flex-1 p-6 space-y-10 lg:ml-64">
     <h2 class="text-2xl font-bold mb-4">Welcome!</h2>
 
-    <!-- Accounts -->
+    
     <section>
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-xl font-semibold">Accounts</h3>
-        <!-- Eye Button -->
-        <button id="toggleBalance" class="p-2 hover:bg-gray-700 rounded-full">
-          <i data-feather="eye" class="w-5 h-5"></i>
-        </button>
-      </div>
+      <h3 class="text-xl font-semibold mb-2">Accounts</h3>
       <div id="accountsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
 
-    <!-- Bills -->
+   
     <section>
       <h3 class="text-xl font-semibold mb-2">Bills</h3>
       <div id="billsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
 
-    <!-- Budgets -->
+    
     <section>
       <h3 class="text-xl font-semibold mb-2">Budgets</h3>
       <div id="budgetsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
 
-    <!-- Goals -->
+   
     <section>
       <h3 class="text-xl font-semibold mb-2">Goals</h3>
       <div id="goalsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
   </main>
 
-  <!-- Feather Icons -->
+ 
   <script src="https://unpkg.com/feather-icons"></script>
 
   <script>
@@ -91,7 +85,7 @@
     const token = localStorage.getItem("jwt_token");
     if (!token) window.location.href = "/login";
 
-    /* ------------------- Notifications ------------------- */
+    
     const notificationBtn = document.getElementById("notificationBtn");
     const notificationDropdown = document.getElementById("notificationDropdown");
     const notificationBadge = document.getElementById("notificationBadge");
@@ -135,7 +129,7 @@
     });
     loadNotifications();
 
-    /* ------------------- CRUD Helpers ------------------- */
+    
     async function fetchItems(endpoint, containerId, renderCard) {
       const res = await fetch(`/api/${endpoint}`, { headers: { Authorization: "Bearer " + token } });
       const data = await res.json();
@@ -156,32 +150,48 @@
       }
     }
 
-    /* ------------------- Accounts ------------------- */
-    let showBalance = false; // default hidden
-
+    
     function loadAccounts() {
       fetchItems("accounts", "accountsList", (acc) => {
         const div = document.createElement("div");
         div.className = "bg-gray-800 p-4 rounded shadow";
+
+        let isHidden = true;
+        let balance = acc.balance;
+
         div.innerHTML = `
-          <h4>${acc.name}</h4>
-          <p>${acc.type}</p>
-          <p class="font-bold">${showBalance ? "₹" + acc.balance : "•••••"}</p>
-          <button class="bg-red-600 px-2 py-1 rounded mt-2">Delete</button>`;
-        div.querySelector("button").onclick = () => deleteItem("accounts", acc.id, "Account deleted", loadAccounts);
+          <h4 class="text-lg font-semibold">${acc.name}</h4>
+          <p class="text-sm text-gray-400">${acc.type}</p>
+          <div class="flex items-center justify-between mt-2">
+            <p class="balance text-xl font-bold">₹${isHidden ? "•••••" : balance}</p>
+            <button class="toggle-eye text-gray-400 hover:text-green-400">
+              <i data-feather="${isHidden ? "eye-off" : "eye"}"></i>
+            </button>
+          </div>
+          <button class="bg-red-600 px-2 py-1 rounded mt-3">Delete</button>
+        `;
+
+        
+        div.querySelector("button.bg-red-600").onclick = () =>
+          deleteItem("accounts", acc.id, "Account deleted", loadAccounts);
+
+        
+        const eyeBtn = div.querySelector(".toggle-eye");
+        const balanceEl = div.querySelector(".balance");
+
+        eyeBtn.addEventListener("click", () => {
+          isHidden = !isHidden;
+          balanceEl.textContent = isHidden ? "₹•••••" : "₹" + balance;
+          eyeBtn.innerHTML = `<i data-feather="${isHidden ? "eye-off" : "eye"}"></i>`;
+          feather.replace(); 
+        });
+
+        feather.replace(); 
         return div;
       });
     }
 
-    document.getElementById("toggleBalance").addEventListener("click", () => {
-      showBalance = !showBalance;
-      const icon = document.querySelector("#toggleBalance i");
-      icon.setAttribute("data-feather", showBalance ? "eye-off" : "eye");
-      feather.replace();
-      loadAccounts();
-    });
-
-    /* ------------------- Bills ------------------- */
+    
     function loadBills() {
       fetchItems("bills", "billsList", (bill) => {
         const div = document.createElement("div");
@@ -193,7 +203,7 @@
       });
     }
 
-    /* ------------------- Budgets ------------------- */
+    
     function loadBudgets() {
       fetchItems("budgets", "budgetsList", (budget) => {
         const div = document.createElement("div");
@@ -205,7 +215,7 @@
       });
     }
 
-    /* ------------------- Goals ------------------- */
+   
     function loadGoals() {
       fetchItems("goals", "goalsList", (goal) => {
         const div = document.createElement("div");
@@ -218,7 +228,7 @@
       });
     }
 
-    /* ------------------- Init ------------------- */
+    
     loadAccounts();
     loadBills();
     loadBudgets();
