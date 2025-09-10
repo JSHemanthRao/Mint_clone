@@ -8,277 +8,273 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col lg:flex-col">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
   <!-- Navbar -->
   <header class="bg-gray-900/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <a href="/" class="text-2xl font-bold text-green-400">Mint Clone</a>
       <nav class="flex space-x-6 items-center">
-  <a href="{{ route('dashboard') }}" class="hover:text-green-400 font-semibold">Dashboard</a>
-  <a href="{{ route('accounts') }}" class="hover:text-green-400 font-semibold">Accounts</a>
-  <a href="{{ route('bills') }}" class="hover:text-green-400 font-semibold">Bills</a>
-  <a href="{{ route('budgets') }}" class="hover:text-green-400 font-semibold">Budgets</a>
-  <a href="{{ route('categories') }}" class="hover:text-green-400 font-semibold">Categories</a>
-  <a href="{{ route('transactions') }}" class="hover:text-green-400 font-semibold">Transactions</a>
-  <a href="{{ route('goals') }}" class="hover:text-green-400 font-semibold">Goals</a>
+        <a href="{{ route('dashboard') }}" class="hover:text-green-400 font-semibold">Dashboard</a>
+        <a href="{{ route('accounts') }}" class="hover:text-green-400 font-semibold">Accounts</a>
+        <a href="{{ route('bills') }}" class="hover:text-green-400 font-semibold">Bills</a>
+        <a href="{{ route('budgets') }}" class="hover:text-green-400 font-semibold">Budgets</a>
+        <a href="{{ route('categories') }}" class="hover:text-green-400 font-semibold">Categories</a>
+        <a href="{{ route('transactions') }}" class="hover:text-green-400 font-semibold">Transactions</a>
+        <a href="{{ route('goals') }}" class="hover:text-green-400 font-semibold">Goals</a>
 
-  <!-- Notification Bell Icon -->
-  <div class="relative">
-    <button id="notificationBtn" class="p-2 hover:bg-gray-700 rounded-full relative">
-      <i data-feather="bell" class="w-5 h-5"></i>
-      <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full">2</span>
-    </button>
+        <!-- Notification Bell -->
+        <div class="relative">
+          <button id="notificationBtn" class="p-2 hover:bg-gray-700 rounded-full relative">
+            <i data-feather="bell" class="w-5 h-5"></i>
+            <span id="notificationBadge"
+              class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full hidden"></span>
+          </button>
 
-    <!-- Notification Dropdown -->
-    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-      <div class="p-4 border-b border-gray-700">
-        <h3 class="text-lg font-semibold">Notifications</h3>
-      </div>
-      <ul class="max-h-60 overflow-y-auto">
-        <li class="p-3 hover:bg-gray-700 cursor-pointer">🔔 New account created</li>
-        <li class="p-3 hover:bg-gray-700 cursor-pointer">💰 Transaction of $250 added</li>
-      </ul>
-      <div class="p-3 text-center border-t border-gray-700">
-        <button class="text-green-400 hover:underline">View All</button>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<!-- JS at bottom -->
-<script src="https://unpkg.com/feather-icons"></script>
-<script>
-  feather.replace();
-
-  const notificationBtn = document.getElementById("notificationBtn");
-  const notificationDropdown = document.getElementById("notificationDropdown");
-  const notificationBadge = document.getElementById("notificationBadge");
-
-  let notificationsSeen = false; // Track if user already opened
-
-  notificationBtn.addEventListener("click", () => {
-    notificationDropdown.classList.toggle("hidden");
-
-    // Hide badge once user opens dropdown for the first time
-    if (!notificationsSeen) {
-      notificationBadge.style.display = "none";
-      notificationsSeen = true;
-    }
-  });
-
-  // Close dropdown when clicking outside
-  document.addEventListener("click", (e) => {
-    if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-      notificationDropdown.classList.add("hidden");
-    }
-  });
-</script>
-
-      <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
+          <!-- Notification Dropdown -->
+          <div id="notificationDropdown"
+            class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div class="p-4 border-b border-gray-700">
+              <h3 class="text-lg font-semibold">Notifications</h3>
+            </div>
+            <ul id="notificationList" class="max-h-60 overflow-y-auto"></ul>
+            <div class="p-3 text-center border-t border-gray-700">
+              <button id="clearNotifications" class="text-green-400 hover:underline">Clear All</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <button id="logoutBtn"
+        class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
     </div>
   </header>
 
   <!-- Main Content -->
-  <main class="flex-1 p-4 sm:p-6 space-y-6 lg:ml-64">
+  <main class="flex-1 p-6 space-y-10 lg:ml-64">
     <h2 class="text-2xl font-bold mb-4">Welcome!</h2>
 
-    <!-- Accounts Section -->
-    <div>
-      <h3 class="text-xl font-semibold mb-2">Your Accounts</h3>
-      <div id="accountsList" class="h-40 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    </div>
+    <!-- Accounts -->
+    <section>
+      <h3 class="text-xl font-semibold mb-2">Accounts</h3>
+      <form id="accountForm" class="space-x-2 flex mb-4">
+        <input type="text" name="name" placeholder="Account Name" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <input type="text" name="type" placeholder="Type" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <input type="number" name="balance" placeholder="Balance" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <button class="bg-green-600 px-4 rounded">Add</button>
+      </form>
+      <div id="accountsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
 
-    <!-- Bills Section -->
-    <div>
+    <!-- Bills -->
+    <section>
       <h3 class="text-xl font-semibold mb-2">Bills</h3>
-      <div id="billsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    </div>
+      <form id="billForm" class="space-x-2 flex mb-4">
+        <input type="text" name="name" placeholder="Bill Name" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <input type="number" name="amount" placeholder="Amount" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <input type="date" name="due_date" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <button class="bg-green-600 px-4 rounded">Add</button>
+      </form>
+      <div id="billsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
 
-    <!-- Budgets Section -->
-    <div>
+    <!-- Budgets -->
+    <section>
       <h3 class="text-xl font-semibold mb-2">Budgets</h3>
-      <div id="budgetsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    </div>
+      <form id="budgetForm" class="space-x-2 flex mb-4">
+        <input type="text" name="category" placeholder="Category" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <input type="number" name="amount" placeholder="Amount" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <button class="bg-green-600 px-4 rounded">Add</button>
+      </form>
+      <div id="budgetsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
 
-    <!-- Goals Section -->
-    <div>
+    <!-- Goals -->
+    <section>
       <h3 class="text-xl font-semibold mb-2">Goals</h3>
-      <div id="goalsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    </div>
+      <form id="goalForm" class="space-x-2 flex mb-4">
+        <input type="text" name="name" placeholder="Goal Name" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <input type="number" name="target_amount" placeholder="Target" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <input type="number" name="current_amount" placeholder="Current" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <input type="date" name="due_date" class="p-2 rounded bg-gray-700 border border-gray-600">
+        <button class="bg-green-600 px-4 rounded">Add</button>
+      </form>
+      <div id="goalsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
   </main>
 
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+
   <script>
+    feather.replace();
     const token = localStorage.getItem("jwt_token");
-    if (!token) {
-      window.location.href = "/login";
+    if (!token) window.location.href = "/login";
+
+    /* ------------------- Notifications ------------------- */
+    const notificationBtn = document.getElementById("notificationBtn");
+    const notificationDropdown = document.getElementById("notificationDropdown");
+    const notificationBadge = document.getElementById("notificationBadge");
+    const notificationList = document.getElementById("notificationList");
+    const clearBtn = document.getElementById("clearNotifications");
+
+    function loadNotifications() {
+      const notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+      notificationList.innerHTML = "";
+      notifications.forEach(msg => {
+        const li = document.createElement("li");
+        li.className = "p-3 hover:bg-gray-700";
+        li.textContent = msg;
+        notificationList.appendChild(li);
+      });
+      updateBadge(notifications.length);
+    }
+    function updateBadge(count) {
+      if (count > 0) {
+        notificationBadge.textContent = count;
+        notificationBadge.classList.remove("hidden");
+      } else notificationBadge.classList.add("hidden");
+    }
+    function addNotification(message) {
+      const notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+      notifications.unshift("🔔 " + message);
+      localStorage.setItem("notifications", JSON.stringify(notifications));
+      loadNotifications();
+    }
+    notificationBtn.addEventListener("click", () => {
+      notificationDropdown.classList.toggle("hidden");
+    });
+    clearBtn.addEventListener("click", () => {
+      localStorage.removeItem("notifications");
+      loadNotifications();
+    });
+    document.addEventListener("click", (e) => {
+      if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+        notificationDropdown.classList.add("hidden");
+      }
+    });
+    loadNotifications();
+
+    /* ------------------- CRUD Helpers ------------------- */
+    async function fetchItems(endpoint, containerId, renderCard) {
+      const res = await fetch(`/api/${endpoint}`, { headers: { Authorization: "Bearer " + token } });
+      const data = await res.json();
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+      data.forEach(item => container.appendChild(renderCard(item)));
     }
 
-    // Eye icons
-    function eyeSVG() {
-      return `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>`;
-    }
-    function eyeOffSVG() {
-      return `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c1.647 0 3.206-.355 4.611-.99M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.5a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L9.88 9.88" />
-        </svg>`;
-    }
-
-    async function fetchData(endpoint, containerId) {
-      try {
-        const res = await fetch(`/api/${endpoint}`, {
-          headers: { Authorization: "Bearer " + token }
-        });
-        const data = await res.json();
-
-        const container = document.getElementById(containerId);
-        container.innerHTML = "";
-
-        if (!data || data.length === 0) {
-          const emptyMsg = document.createElement("div");
-          emptyMsg.className = "bg-gray-700 text-gray-300 p-4 rounded-xl text-center";
-          emptyMsg.innerHTML = `No ${endpoint} found`;
-          container.appendChild(emptyMsg);
-          return;
-        }
-
-        const inr = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 });
-
-        data.forEach((item) => {
-          const card = document.createElement("div");
-          card.className = "bg-gray-800 p-4 rounded-xl shadow text-sm sm:text-base";
-
-          if (endpoint === "accounts") {
-            // header
-            const title = document.createElement("h4");
-            title.className = "font-bold";
-            title.textContent = item.name;
-
-            const type = document.createElement("p");
-            type.className = "text-gray-400";
-            type.textContent = `Account Type: ${item.type}`;
-
-            // balance row (masked by default)
-            let isHidden = true;
-            const balanceRow = document.createElement("div");
-            balanceRow.className = "flex items-center gap-2 mt-1";
-
-            const balanceEl = document.createElement("span");
-            balanceEl.className = "text-gray-300";
-
-            const toggleBtn = document.createElement("button");
-            toggleBtn.type = "button";
-            toggleBtn.className = "p-1 rounded hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500";
-
-            const renderBalance = () => {
-              balanceEl.textContent = isHidden
-                ? `Balance: ₹ ••••`
-                : `Balance: ₹${inr.format(Number(item.balance || 0))}`;
-              toggleBtn.innerHTML = isHidden ? eyeOffSVG() : eyeSVG();
-              toggleBtn.title = isHidden ? "Show balance" : "Hide balance";
-            };
-
-            toggleBtn.addEventListener("click", () => {
-              isHidden = !isHidden;
-              renderBalance();
-            });
-
-            renderBalance();
-
-            balanceRow.appendChild(balanceEl);
-            balanceRow.appendChild(toggleBtn);
-
-            card.appendChild(title);
-            card.appendChild(type);
-            card.appendChild(balanceRow);
-
-          } else if (endpoint === "bills") {
-            const today = new Date().toISOString().split("T")[0];
-            let status = "";
-            if (item.due_date < today) {
-              card.classList.add("bg-red-700/30", "border", "border-red-500");
-              status = "Overdue";
-            } else {
-              card.classList.add("bg-green-900/30", "border", "border-green-500");
-              status = "Upcoming";
-            }
-
-            card.innerHTML = `
-              <h4 class="font-bold mb-2">${item.name}</h4>
-              <p class="text-gray-400">Amount: ₹${inr.format(Number(item.amount || 0))}</p>
-              <p class="text-gray-400">Due Date: ${item.due_date}</p>
-              <p class="text-sm mt-1 font-semibold">Status: ${status}</p>
-              <div class="flex gap-2 mt-3">
-                <button class="markBtn bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg">✔</button>
-                <button class="deleteBtn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg">🗑</button>
-              </div>
-            `;
-
-            // mark as paid
-            card.querySelector(".markBtn").addEventListener("click", () => {
-              card.classList.remove("bg-red-700/30", "border-red-500");
-              card.classList.add("bg-green-700");
-            });
-
-            // delete
-            card.querySelector(".deleteBtn").addEventListener("click", async () => {
-              try {
-                const res = await fetch(`/api/bills/${item.id}`, {
-                  method: "DELETE",
-                  headers: {
-                    Authorization: "Bearer " + token,
-                    "Content-Type": "application/json"
-                  }
-                });
-                if (res.ok) {
-                  card.remove();
-                } else {
-                  alert("❌ Failed to delete bill");
-                }
-              } catch (err) {
-                console.error("Error deleting bill:", err);
-              }
-            });
-
-          } else if (endpoint === "budgets") {
-            card.innerHTML = `
-              <h4 class="font-bold">${item.category ? item.category.name : "No Category"}</h4>
-              <p class="text-gray-400">Amount: ₹${inr.format(Number(item.amount || 0))}</p>
-            `;
-          } else if (endpoint === "goals") {
-            card.innerHTML = `
-              <h4 class="font-bold">${item.name}</h4>
-              <p class="text-gray-400">Target: ₹${inr.format(Number(item.target_amount || 0))}</p>
-              <p class="text-gray-400">Current: ₹${inr.format(Number(item.current_amount || 0))}</p>
-              <p class="text-gray-400">Due Date: ${item.due_date}</p>
-            `;
-          } else {
-            card.innerHTML = `<h4 class="font-bold">${item.name || item.title}</h4>`;
-          }
-
-          container.appendChild(card);
-        });
-
-      } catch (err) {
-        console.error(`Error loading ${endpoint}:`, err);
+    async function createItem(endpoint, payload, onSuccessMsg, reloadFn) {
+      const res = await fetch(`/api/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        addNotification(onSuccessMsg);
+        reloadFn();
       }
     }
 
-    // Fetch data
-    fetchData("accounts", "accountsList");
-    fetchData("bills", "billsList");
-    fetchData("budgets", "budgetsList");
-    fetchData("goals", "goalsList");
+    async function deleteItem(endpoint, id, onSuccessMsg, reloadFn) {
+      if (!confirm("Are you sure?")) return;
+      const res = await fetch(`/api/${endpoint}/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + token }
+      });
+      if (res.ok) {
+        addNotification(onSuccessMsg);
+        reloadFn();
+      }
+    }
 
-    // Logout
-    document.getElementById("logoutBtn").addEventListener("click", () => {
+    /* ------------------- Accounts ------------------- */
+    document.getElementById("accountForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const f = e.target;
+      createItem("accounts", { name: f.name.value, type: f.type.value, balance: f.balance.value },
+        "Account added", loadAccounts);
+      f.reset();
+    });
+    function loadAccounts() {
+      fetchItems("accounts", "accountsList", (acc) => {
+        const div = document.createElement("div");
+        div.className = "bg-gray-800 p-4 rounded shadow";
+        div.innerHTML = `<h4>${acc.name}</h4><p>${acc.type}</p><p>₹${acc.balance}</p>
+          <button class="bg-red-600 px-2 py-1 rounded mt-2">Delete</button>`;
+        div.querySelector("button").onclick = () => deleteItem("accounts", acc.id, "Account deleted", loadAccounts);
+        return div;
+      });
+    }
+
+    /* ------------------- Bills ------------------- */
+    document.getElementById("billForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const f = e.target;
+      createItem("bills", { name: f.name.value, amount: f.amount.value, due_date: f.due_date.value },
+        "Bill added", loadBills);
+      f.reset();
+    });
+    function loadBills() {
+      fetchItems("bills", "billsList", (bill) => {
+        const div = document.createElement("div");
+        div.className = "bg-gray-800 p-4 rounded shadow";
+        div.innerHTML = `<h4>${bill.name}</h4><p>₹${bill.amount}</p><p>${bill.due_date}</p>
+          <button class="bg-red-600 px-2 py-1 rounded mt-2">Delete</button>`;
+        div.querySelector("button").onclick = () => deleteItem("bills", bill.id, "Bill deleted", loadBills);
+        return div;
+      });
+    }
+
+    /* ------------------- Budgets ------------------- */
+    document.getElementById("budgetForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const f = e.target;
+      createItem("budgets", { category: f.category.value, amount: f.amount.value },
+        "Budget added", loadBudgets);
+      f.reset();
+    });
+    function loadBudgets() {
+      fetchItems("budgets", "budgetsList", (budget) => {
+        const div = document.createElement("div");
+        div.className = "bg-gray-800 p-4 rounded shadow";
+        div.innerHTML = `<h4>${budget.category?.name || budget.category}</h4><p>₹${budget.amount}</p>
+          <button class="bg-red-600 px-2 py-1 rounded mt-2">Delete</button>`;
+        div.querySelector("button").onclick = () => deleteItem("budgets", budget.id, "Budget deleted", loadBudgets);
+        return div;
+      });
+    }
+
+    /* ------------------- Goals ------------------- */
+    document.getElementById("goalForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const f = e.target;
+      createItem("goals", {
+        name: f.name.value, target_amount: f.target_amount.value,
+        current_amount: f.current_amount.value, due_date: f.due_date.value
+      }, "Goal added", loadGoals);
+      f.reset();
+    });
+    function loadGoals() {
+      fetchItems("goals", "goalsList", (goal) => {
+        const div = document.createElement("div");
+        div.className = "bg-gray-800 p-4 rounded shadow";
+        div.innerHTML = `<h4>${goal.name}</h4><p>Target: ₹${goal.target_amount}</p>
+          <p>Current: ₹${goal.current_amount}</p><p>${goal.due_date}</p>
+          <button class="bg-red-600 px-2 py-1 rounded mt-2">Delete</button>`;
+        div.querySelector("button").onclick = () => deleteItem("goals", goal.id, "Goal deleted", loadGoals);
+        return div;
+      });
+    }
+
+    /* ------------------- Init ------------------- */
+    loadAccounts();
+    loadBills();
+    loadBudgets();
+    loadGoals();
+
+    document.getElementById("logoutBtn").onclick = () => {
       localStorage.removeItem("jwt_token");
       window.location.href = "/login";
-    });
+    };
   </script>
 </body>
 </html>

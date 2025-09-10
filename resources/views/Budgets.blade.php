@@ -27,29 +27,25 @@
         <div class="relative">
           <button id="notificationBtn" class="p-2 hover:bg-gray-700 rounded-full relative">
             <i data-feather="bell" class="w-5 h-5"></i>
-            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full">2</span>
+            <span id="notificationBadge"
+              class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full hidden">0</span>
           </button>
 
           <!-- Notification Dropdown -->
-          <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+          <div id="notificationDropdown"
+            class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
             <div class="p-4 border-b border-gray-700">
               <h3 class="text-lg font-semibold">Notifications</h3>
             </div>
-            <ul class="max-h-60 overflow-y-auto">
-              <li class="p-3 hover:bg-gray-700 cursor-pointer">🔔 New account created</li>
-              <li class="p-3 hover:bg-gray-700 cursor-pointer">💰 Transaction of $250 added</li>
+            <ul id="notificationList" class="max-h-60 overflow-y-auto">
+              <!-- Notifications will be injected here -->
             </ul>
             <div class="p-3 text-center border-t border-gray-700">
-              <button class="text-green-400 hover:underline">View All</button>
+              <button id="clearNotifications" class="text-green-400 hover:underline">Clear All</button>
             </div>
           </div>
         </div>
       </nav>
-
-      <!-- JS at bottom -->
-
-      
-
       <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
     </div>
   </header>
@@ -174,6 +170,7 @@
         if (res.ok) {
           btn.closest("div").remove();
           showPopup("Budget deleted successfully!");
+          saveNotification("❌ Budget deleted");
         } else {
           let error = await res.json();
           alert("Failed to delete budget: " + (error.message ?? "Unknown error"));
@@ -183,7 +180,7 @@
       }
     }
 
-    document.getElementById('budgetForm').addEventListener('submit', async function(event) {
+    document.getElementById('budgetForm').addEventListener('submit', async function (event) {
       event.preventDefault();
 
       let formData = new FormData(this);
@@ -203,40 +200,66 @@
         renderBudget(data);
         this.reset();
         showPopup("Budget created successfully!");
+        saveNotification("✅ Budget created");
       } else {
         alert("Failed to create budget: " + (data.message ?? "Unknown error"));
       }
     });
 
     loadBudgets();
+
+    // ------------------ Persistent Notifications -------------------
+    const notificationBtn = document.getElementById("notificationBtn");
+    const notificationDropdown = document.getElementById("notificationDropdown");
+    const notificationBadge = document.getElementById("notificationBadge");
+    const notificationList = document.getElementById("notificationList");
+    const clearBtn = document.getElementById("clearNotifications");
+
+    function loadNotifications() {
+      let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+      notificationList.innerHTML = "";
+      if (notifications.length === 0) {
+        notificationList.innerHTML = `<li class="p-3 text-gray-400">No new notifications</li>`;
+        notificationBadge.classList.add("hidden");
+      } else {
+        notifications.forEach(note => {
+          let li = document.createElement("li");
+          li.className = "p-3 hover:bg-gray-700 cursor-pointer";
+          li.textContent = note;
+          notificationList.appendChild(li);
+        });
+        notificationBadge.textContent = notifications.length;
+        notificationBadge.classList.remove("hidden");
+      }
+    }
+
+    function saveNotification(message) {
+      let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+      notifications.unshift(message);
+      localStorage.setItem("notifications", JSON.stringify(notifications));
+      loadNotifications();
+    }
+
+    clearBtn.addEventListener("click", () => {
+      localStorage.removeItem("notifications");
+      loadNotifications();
+    });
+
+    notificationBtn.addEventListener("click", () => {
+      notificationDropdown.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+        notificationDropdown.classList.add("hidden");
+      }
+    });
+
+    // Initialize notifications on page load
+    loadNotifications();
   </script>
+
   <script src="https://unpkg.com/feather-icons"></script>
-      <script>
-        feather.replace();
-
-        const notificationBtn = document.getElementById("notificationBtn");
-        const notificationDropdown = document.getElementById("notificationDropdown");
-        const notificationBadge = document.getElementById("notificationBadge");
-
-        let notificationsSeen = false; // Track if user already opened
-
-        notificationBtn.addEventListener("click", () => {
-          notificationDropdown.classList.toggle("hidden");
-
-          // Hide badge once user opens dropdown for the first time
-          if (!notificationsSeen) {
-            notificationBadge.style.display = "none";
-            notificationsSeen = true;
-          }
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener("click", (e) => {
-          if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-            notificationDropdown.classList.add("hidden");
-          }
-        });
-      </script>
+  <script>feather.replace();</script>
 </body>
-
 </html>

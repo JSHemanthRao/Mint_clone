@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Transactions</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
 </head>
 
 <body class="bg-gray-900 text-gray-100 min-h-screen flex lg:flex-col">
@@ -23,57 +24,24 @@
         <a href="{{ route('transactions') }}" class="hover:text-green-400 font-semibold">Transactions</a>
         <a href="{{ route('goals') }}" class="hover:text-green-400 font-semibold">Goals</a>
 
-        <!-- Notification Bell Icon -->
+        <!-- Notification Bell -->
         <div class="relative">
           <button id="notificationBtn" class="p-2 hover:bg-gray-700 rounded-full relative">
             <i data-feather="bell" class="w-5 h-5"></i>
-            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full">2</span>
+            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full hidden">0</span>
           </button>
 
           <!-- Notification Dropdown -->
-          <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-            <div class="p-4 border-b border-gray-700">
+          <div id="notificationDropdown"
+            class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
               <h3 class="text-lg font-semibold">Notifications</h3>
+              <button id="clearNotifications" class="text-red-400 text-sm hover:underline">Clear All</button>
             </div>
-            <ul class="max-h-60 overflow-y-auto">
-              <li class="p-3 hover:bg-gray-700 cursor-pointer">🔔 New account created</li>
-              <li class="p-3 hover:bg-gray-700 cursor-pointer">💰 Transaction of $250 added</li>
-            </ul>
-            <div class="p-3 text-center border-t border-gray-700">
-              <button class="text-green-400 hover:underline">View All</button>
-            </div>
+            <ul id="notificationList" class="max-h-60 overflow-y-auto"></ul>
           </div>
         </div>
       </nav>
-
-      <!-- JS at bottom -->
-      <script src="https://unpkg.com/feather-icons"></script>
-      <script>
-        feather.replace();
-
-        const notificationBtn = document.getElementById("notificationBtn");
-        const notificationDropdown = document.getElementById("notificationDropdown");
-        const notificationBadge = document.getElementById("notificationBadge");
-
-        let notificationsSeen = false; // Track if user already opened
-
-        notificationBtn.addEventListener("click", () => {
-          notificationDropdown.classList.toggle("hidden");
-
-          // Hide badge once user opens dropdown for the first time
-          if (!notificationsSeen) {
-            notificationBadge.style.display = "none";
-            notificationsSeen = true;
-          }
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener("click", (e) => {
-          if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-            notificationDropdown.classList.add("hidden");
-          }
-        });
-      </script>
 
       <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
     </div>
@@ -85,8 +53,7 @@
     <!-- Transactions Form -->
     <div class="bg-gray-800/90 backdrop-blur-lg p-6 rounded-2xl shadow-lg w-full max-w-md">
       <h2 class="text-2xl font-semibold text-center mb-6">Add Transaction</h2>
-      <form id="transactionsForm" class="space-y-4" method="POST" action="{{ route('transactions.store') }}">
-        @csrf
+      <form id="transactionsForm" class="space-y-4">
         <div>
           <input name="description" type="text" placeholder="Description (e.g., Starbucks)"
             class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none">
@@ -130,24 +97,75 @@
     <!-- Transactions List -->
     <div class="w-full max-w-5xl bg-gray-700/90 backdrop-blur-lg p-6 rounded-2xl shadow-lg">
       <h2 class="text-2xl font-semibold text-center mb-6">Transactions List</h2>
-      <div id="transactionsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      </div>
+      <div id="transactionsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </div>
   </main>
 
   <script>
+    feather.replace();
+
     const token = localStorage.getItem("jwt_token");
     if (!token) {
       window.location.href = "/login";
     }
 
+    // --- Notifications ---
+    const notificationBtn = document.getElementById("notificationBtn");
+    const notificationDropdown = document.getElementById("notificationDropdown");
+    const notificationBadge = document.getElementById("notificationBadge");
+    const notificationList = document.getElementById("notificationList");
+    const clearNotificationsBtn = document.getElementById("clearNotifications");
 
-    document.getElementById("logoutBtn").addEventListener("click", async function() {
+    let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+
+    function renderNotifications() {
+      notificationList.innerHTML = "";
+      notifications.forEach(n => {
+        let li = document.createElement("li");
+        li.className = "p-3 hover:bg-gray-700 cursor-pointer";
+        li.textContent = n;
+        notificationList.appendChild(li);
+      });
+
+      if (notifications.length > 0) {
+        notificationBadge.textContent = notifications.length;
+        notificationBadge.style.display = "block";
+      } else {
+        notificationBadge.style.display = "none";
+      }
+
+      localStorage.setItem("notifications", JSON.stringify(notifications));
+    }
+
+    function addNotification(msg) {
+      notifications.unshift(msg);
+      renderNotifications();
+    }
+
+    renderNotifications();
+
+    notificationBtn.addEventListener("click", () => {
+      notificationDropdown.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+        notificationDropdown.classList.add("hidden");
+      }
+    });
+
+    clearNotificationsBtn.addEventListener("click", () => {
+      notifications = [];
+      renderNotifications();
+    });
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", async function () {
       localStorage.removeItem("jwt_token");
       window.location.href = "/login";
     });
 
-
+    // Load Transactions
     async function loadTransactions() {
       try {
         let res = await fetch('/api/transactions', {
@@ -159,22 +177,24 @@
         });
 
         let transactions = await res.json();
+        console.log("Transactions response:", transactions);
 
         if (res.ok) {
           let list = document.getElementById('transactionsList');
           list.innerHTML = "";
 
-          transactions.forEach(data => {
+          let items = transactions.data ? transactions.data : transactions; // handle pagination
+
+          items.forEach(data => {
             list.innerHTML += `
               <div class="bg-gray-800 p-5 rounded-xl shadow-md w-full relative">
-                <button onclick="deleteTransaction(${data.id})" 
-                  // class="absolute top-3 right-3 text-red-500 hover:text-red-700 font-bold"></button>
+                <button onclick="deleteTransaction(${data.id}, '${data.description}')" 
+                  class="absolute top-3 right-3 text-red-500 hover:text-red-700 font-bold">✖</button>
                 <h3 class="text-lg font-semibold">${data.description}</h3>
                 <p class="text-gray-300">Amount: ₹${data.amount}</p>
                 <p class="text-gray-300">Date: ${data.date}</p>
                 <p class="text-gray-400 text-sm">Category: ${data.category ? data.category.name : "N/A"}</p>
                 <p class="text-gray-400 text-sm">Account: ${data.account ? data.account.name : "N/A"}</p>
-                <p class="text-gray-400 text-sm">Account Type: ${data.account?.type || "N/A"}</p>
               </div>
             `;
           });
@@ -187,7 +207,7 @@
     }
 
     // Delete Transaction
-    async function deleteTransaction(id) {
+    async function deleteTransaction(id, description) {
       if (!confirm("Are you sure you want to delete this transaction?")) return;
 
       try {
@@ -200,7 +220,8 @@
         });
 
         if (res.ok) {
-          loadTransactions(); // Reload list after delete
+          // addNotification(`❌ Transaction "${description}" deleted`);
+          loadTransactions();
         } else {
           let err = await res.json();
           console.error("Delete failed:", err);
@@ -236,7 +257,7 @@
     }
 
     // Handle Transaction Form Submit
-    document.getElementById('transactionsForm').addEventListener('submit', async function(event) {
+    document.getElementById('transactionsForm').addEventListener('submit', async function (event) {
       event.preventDefault();
 
       // Clear old errors
@@ -264,12 +285,13 @@
       });
 
       let data = await res.json();
+      console.log("Transaction create response:", data);
 
       if (res.ok) {
+        addNotification(`💰 Transaction "${data.description}" of ₹${data.amount} added`);
         document.getElementById('transactionsForm').reset();
         loadTransactions();
       } else if (data.errors) {
-        // Show inline validation errors
         for (let field in data.errors) {
           let errorEl = document.getElementById(`error-${field}`);
           if (errorEl) {
@@ -280,7 +302,7 @@
       }
     });
 
-    // Initialize page
+    // Initialize
     window.onload = () => {
       loadAccounts();
       loadTransactions();

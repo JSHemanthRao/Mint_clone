@@ -26,18 +26,17 @@
         <div class="relative">
           <button id="notificationBtn" class="p-2 hover:bg-gray-700 rounded-full relative">
             <i data-feather="bell" class="w-5 h-5"></i>
-            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full">2</span>
+            <span id="notificationBadge"
+              class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full hidden">0</span>
           </button>
 
           <!-- Notification Dropdown -->
-          <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+          <div id="notificationDropdown"
+            class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
             <div class="p-4 border-b border-gray-700">
               <h3 class="text-lg font-semibold">Notifications</h3>
             </div>
-            <ul class="max-h-60 overflow-y-auto">
-              <li class="p-3 hover:bg-gray-700 cursor-pointer">🔔 New account created</li>
-              <li class="p-3 hover:bg-gray-700 cursor-pointer">💰 Transaction of $250 added</li>
-            </ul>
+            <ul id="notificationList" class="max-h-60 overflow-y-auto"></ul>
             <div class="p-3 text-center border-t border-gray-700">
               <button class="text-green-400 hover:underline">View All</button>
             </div>
@@ -45,36 +44,8 @@
         </div>
       </nav>
 
-      <!-- JS at bottom -->
-      <script src="https://unpkg.com/feather-icons"></script>
-      <script>
-        feather.replace();
-
-        const notificationBtn = document.getElementById("notificationBtn");
-        const notificationDropdown = document.getElementById("notificationDropdown");
-        const notificationBadge = document.getElementById("notificationBadge");
-
-        let notificationsSeen = false; // Track if user already opened
-
-        notificationBtn.addEventListener("click", () => {
-          notificationDropdown.classList.toggle("hidden");
-
-          // Hide badge once user opens dropdown for the first time
-          if (!notificationsSeen) {
-            notificationBadge.style.display = "none";
-            notificationsSeen = true;
-          }
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener("click", (e) => {
-          if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-            notificationDropdown.classList.add("hidden");
-          }
-        });
-      </script>
-
-      <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
+      <button id="logoutBtn"
+        class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
     </div>
   </header>
 
@@ -129,24 +100,108 @@
     </div>
   </main>
 
-  <!-- Script -->
+  <!-- Scripts -->
+  <script src="https://unpkg.com/feather-icons"></script>
   <script>
+    feather.replace();
+
+    // ✅ Notification System (with DB)
+    const notificationBtn = document.getElementById("notificationBtn");
+    const notificationDropdown = document.getElementById("notificationDropdown");
+    const notificationBadge = document.getElementById("notificationBadge");
+    const notificationList = document.getElementById("notificationList");
+    let unseenCount = 0;
+
+    async function loadNotifications() {
+      let token = localStorage.getItem("jwt_token");
+      try {
+        let res = await fetch("/api/notifications", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        let notifications = await res.json();
+        renderNotifications(notifications);
+      } catch (err) {
+        console.error("Error loading notifications:", err);
+      }
+    }
+
+    function renderNotifications(notifications) {
+      notificationList.innerHTML = "";
+      unseenCount = 0;
+
+      notifications.forEach(n => {
+        const li = document.createElement("li");
+        li.className = "p-3 hover:bg-gray-700 cursor-pointer text-sm";
+        li.textContent = n.message;
+        notificationList.prepend(li);
+        if (!n.read) unseenCount++;
+      });
+
+      updateBadge();
+    }
+
+    async function addNotification(message) {
+      let token = localStorage.getItem("jwt_token");
+      try {
+        let res = await fetch("/api/notifications", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({ message })
+        });
+        if (res.ok) {
+          loadNotifications(); // refresh list
+        }
+      } catch (err) {
+        console.error("Error adding notification:", err);
+      }
+    }
+
+    function updateBadge() {
+      if (unseenCount > 0) {
+        notificationBadge.textContent = unseenCount;
+        notificationBadge.classList.remove("hidden");
+      } else {
+        notificationBadge.classList.add("hidden");
+      }
+    }
+
+    notificationBtn.addEventListener("click", async () => {
+      notificationDropdown.classList.toggle("hidden");
+      if (!notificationDropdown.classList.contains("hidden")) {
+        unseenCount = 0;
+        updateBadge();
+
+        // mark all as read in DB
+        let token = localStorage.getItem("jwt_token");
+        await fetch("/api/notifications/read", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + token }
+        });
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+        notificationDropdown.classList.add("hidden");
+      }
+    });
+
+    // ✅ Accounts CRUD Logic
     let accountsList = document.getElementById("accountsList");
     let accountForm = document.getElementById("accountForm");
     let successToast = document.getElementById("successToast");
 
-    // ✅ Load Accounts
     async function loadAccounts() {
       accountsList.innerHTML = "";
       let token = localStorage.getItem("jwt_token");
 
       try {
         let res = await fetch("/api/accounts", {
-          headers: {
-            "Authorization": "Bearer " + token
-          }
+          headers: { "Authorization": "Bearer " + token }
         });
-
         let accounts = await res.json();
         accounts.forEach(acc => renderAccount(acc));
       } catch (err) {
@@ -154,7 +209,6 @@
       }
     }
 
-    // ✅ Render Account Card
     function renderAccount(account) {
       accountsList.innerHTML += `
         <div class="bg-gray-700 p-4 rounded-lg shadow-md flex flex-col justify-between">
@@ -184,15 +238,10 @@
       `;
     }
 
-    // ✅ Handle Deposit/Withdraw
     async function updateBalance(accountId, action) {
       let token = localStorage.getItem("jwt_token");
       let amount = parseFloat(prompt(`Enter amount to ${action}:`));
-
-      if (!amount || isNaN(amount) || amount <= 0) {
-        alert("Invalid amount");
-        return;
-      }
+      if (!amount || isNaN(amount) || amount <= 0) return alert("Invalid amount");
 
       try {
         let res = await fetch(`/api/accounts/${accountId}/${action}`, {
@@ -201,14 +250,13 @@
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token
           },
-          body: JSON.stringify({
-            amount: amount
-          })
+          body: JSON.stringify({ amount })
         });
 
         let data = await res.json();
         if (res.ok) {
           loadAccounts();
+          addNotification(`💰 ${action === "deposit" ? "Deposited" : "Withdrew"} ₹${amount} in account #${accountId}`);
         } else {
           alert("Error: " + (data.error || JSON.stringify(data)));
         }
@@ -218,11 +266,9 @@
       }
     }
 
-    // ✅ Handle Create Account Form
-    accountForm.addEventListener("submit", async function(e) {
+    accountForm.addEventListener("submit", async function (e) {
       e.preventDefault();
       let token = localStorage.getItem("jwt_token");
-
       let formData = {
         name: document.getElementById("name").value,
         type: document.getElementById("type").value,
@@ -244,6 +290,7 @@
           accountForm.reset();
           showToast("Account created successfully!");
           loadAccounts();
+          addNotification(`🏦 New account "${formData.name}" created`);
         } else {
           alert("Error: " + (data.error || JSON.stringify(data)));
         }
@@ -253,16 +300,16 @@
       }
     });
 
-    // ✅ Toast function
     function showToast(message) {
       successToast.innerText = message;
       successToast.classList.remove("hidden");
-      setTimeout(() => {
-        successToast.classList.add("hidden");
-      }, 3000);
+      setTimeout(() => successToast.classList.add("hidden"), 3000);
     }
 
-    document.addEventListener("DOMContentLoaded", loadAccounts);
+    document.addEventListener("DOMContentLoaded", () => {
+      loadAccounts();
+      loadNotifications();
+    });
   </script>
 </body>
 

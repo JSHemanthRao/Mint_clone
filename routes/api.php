@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AccountController;
@@ -29,9 +30,12 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/accounts/{id}/deposit', [AccountController::class, 'deposit']);
     Route::post('/accounts/{id}/withdraw', [AccountController::class, 'withdraw']);
+    Route::middleware('auth:api')->get('/notifications', [NotificationController::class, 'index']);
 
-
-
+    Route::middleware('auth:api')->group(function () {
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::post('/notifications/read', [NotificationController::class, 'markAllRead']);
+    });
 
     Route::get('/chart/spending-by-category', [App\Http\Controllers\DashboardController::class, 'spendingByCategory']);
 });

@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Goals</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
 </head>
 
 <body class="bg-gray-900 text-gray-100 min-h-screen flex lg:flex-col">
@@ -15,66 +16,33 @@
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <a href="/" class="text-2xl font-bold text-green-400">Mint Clone</a>
       <nav class="flex space-x-6 items-center">
-  <a href="{{ route('dashboard') }}" class="hover:text-green-400 font-semibold">Dashboard</a>
-  <a href="{{ route('accounts') }}" class="hover:text-green-400 font-semibold">Accounts</a>
-  <a href="{{ route('bills') }}" class="hover:text-green-400 font-semibold">Bills</a>
-  <a href="{{ route('budgets') }}" class="hover:text-green-400 font-semibold">Budgets</a>
-  <a href="{{ route('categories') }}" class="hover:text-green-400 font-semibold">Categories</a>
-  <a href="{{ route('transactions') }}" class="hover:text-green-400 font-semibold">Transactions</a>
-  <a href="{{ route('goals') }}" class="hover:text-green-400 font-semibold">Goals</a>
+        <a href="{{ route('dashboard') }}" class="hover:text-green-400 font-semibold">Dashboard</a>
+        <a href="{{ route('accounts') }}" class="hover:text-green-400 font-semibold">Accounts</a>
+        <a href="{{ route('bills') }}" class="hover:text-green-400 font-semibold">Bills</a>
+        <a href="{{ route('budgets') }}" class="hover:text-green-400 font-semibold">Budgets</a>
+        <a href="{{ route('categories') }}" class="hover:text-green-400 font-semibold">Categories</a>
+        <a href="{{ route('transactions') }}" class="hover:text-green-400 font-semibold">Transactions</a>
+        <a href="{{ route('goals') }}" class="hover:text-green-400 font-semibold">Goals</a>
 
-  <!-- Notification Bell Icon -->
-  <div class="relative">
-    <button id="notificationBtn" class="p-2 hover:bg-gray-700 rounded-full relative">
-      <i data-feather="bell" class="w-5 h-5"></i>
-      <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full">2</span>
-    </button>
+        <!-- Notification Bell -->
+        <div class="relative">
+          <button id="notificationBtn" class="p-2 hover:bg-gray-700 rounded-full relative">
+            <i data-feather="bell" class="w-5 h-5"></i>
+            <span id="notificationBadge"
+              class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full hidden">0</span>
+          </button>
 
-    <!-- Notification Dropdown -->
-    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-      <div class="p-4 border-b border-gray-700">
-        <h3 class="text-lg font-semibold">Notifications</h3>
-      </div>
-      <ul class="max-h-60 overflow-y-auto">
-        <li class="p-3 hover:bg-gray-700 cursor-pointer">🔔 New account created</li>
-        <li class="p-3 hover:bg-gray-700 cursor-pointer">💰 Transaction of $250 added</li>
-      </ul>
-      <div class="p-3 text-center border-t border-gray-700">
-        <button class="text-green-400 hover:underline">View All</button>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<!-- JS at bottom -->
-<script src="https://unpkg.com/feather-icons"></script>
-<script>
-  feather.replace();
-
-  const notificationBtn = document.getElementById("notificationBtn");
-  const notificationDropdown = document.getElementById("notificationDropdown");
-  const notificationBadge = document.getElementById("notificationBadge");
-
-  let notificationsSeen = false; // Track if user already opened
-
-  notificationBtn.addEventListener("click", () => {
-    notificationDropdown.classList.toggle("hidden");
-
-    // Hide badge once user opens dropdown for the first time
-    if (!notificationsSeen) {
-      notificationBadge.style.display = "none";
-      notificationsSeen = true;
-    }
-  });
-
-  // Close dropdown when clicking outside
-  document.addEventListener("click", (e) => {
-    if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-      notificationDropdown.classList.add("hidden");
-    }
-  });
-</script>
-
+          <!-- Dropdown -->
+          <div id="notificationDropdown"
+            class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+              <h3 class="text-lg font-semibold">Notifications</h3>
+              <button id="clearNotifications" class="text-red-400 text-sm hover:underline">Clear All</button>
+            </div>
+            <ul id="notificationList" class="max-h-60 overflow-y-auto"></ul>
+          </div>
+        </div>
+      </nav>
       <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
     </div>
   </header>
@@ -125,18 +93,71 @@
   </main>
 
   <script>
+    feather.replace();
+
     const token = localStorage.getItem("jwt_token");
     if (!token) {
       window.location.href = "/login";
     }
 
-    // Logout
+    // ===== Notification System =====
+    const notificationBtn = document.getElementById("notificationBtn");
+    const notificationDropdown = document.getElementById("notificationDropdown");
+    const notificationBadge = document.getElementById("notificationBadge");
+    const notificationList = document.getElementById("notificationList");
+    const clearNotificationsBtn = document.getElementById("clearNotifications");
+
+    let notifications = JSON.parse(localStorage.getItem("notifications")) || ["🔔 Welcome back!"];
+
+    function renderNotifications() {
+      notificationList.innerHTML = "";
+      notifications.forEach(n => {
+        let li = document.createElement("li");
+        li.className = "p-3 hover:bg-gray-700 cursor-pointer";
+        li.textContent = n;
+        notificationList.appendChild(li);
+      });
+
+      if (notifications.length > 0) {
+        notificationBadge.textContent = notifications.length;
+        notificationBadge.classList.remove("hidden");
+      } else {
+        notificationBadge.classList.add("hidden");
+      }
+
+      localStorage.setItem("notifications", JSON.stringify(notifications));
+    }
+
+    renderNotifications();
+
+    notificationBtn.addEventListener("click", () => {
+      notificationDropdown.classList.toggle("hidden");
+      notificationBadge.classList.add("hidden"); // clear badge once opened
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+        notificationDropdown.classList.add("hidden");
+      }
+    });
+
+    clearNotificationsBtn.addEventListener("click", () => {
+      notifications = [];
+      renderNotifications();
+    });
+
+    function addNotification(msg) {
+      notifications.unshift(msg);
+      renderNotifications();
+    }
+
+    // ===== Logout =====
     document.getElementById("logoutBtn").addEventListener("click", async function () {
       localStorage.removeItem("jwt_token");
       window.location.href = "/login";
     });
 
-    // Load all goals
+    // ===== Goals Feature =====
     async function loadGoals() {
       try {
         let res = await fetch('/api/goals', {
@@ -147,7 +168,6 @@
         });
 
         let data = await res.json();
-        console.log("Load Goals Response:", data);
 
         if (res.ok) {
           let goalsList = document.getElementById('goalsList');
@@ -176,11 +196,9 @@
       }
     }
 
-    // Handle form submit
     document.getElementById('goalsForm').addEventListener('submit', async function (event) {
       event.preventDefault();
 
-      // clear old errors
       document.querySelectorAll('[id^="error-"]').forEach(el => {
         el.textContent = "";
         el.classList.add("hidden");
@@ -205,13 +223,12 @@
         });
 
         let data = await res.json();
-        console.log("Save Goal Response:", data);
 
         if (res.ok) {
           document.getElementById('goalsForm').reset();
+          addNotification(`🎯 New goal "${goalData.name}" added`);
           loadGoals();
         } else if (data.errors) {
-          // show inline validation errors
           for (let field in data.errors) {
             let errorElement = document.getElementById(`error-${field}`);
             if (errorElement) {
@@ -227,7 +244,6 @@
       }
     });
 
-    // Delete goal
     async function deleteGoal(id) {
       if (!confirm("Are you sure you want to delete this goal?")) return;
       try {
@@ -240,6 +256,7 @@
         });
 
         if (res.ok) {
+          addNotification(`🗑️ Goal deleted`);
           loadGoals();
         } else {
           let data = await res.json();
@@ -253,4 +270,5 @@
     window.onload = loadGoals;
   </script>
 </body>
+
 </html>
