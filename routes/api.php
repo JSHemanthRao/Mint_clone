@@ -12,6 +12,8 @@ use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\GoalController;
 
+
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 

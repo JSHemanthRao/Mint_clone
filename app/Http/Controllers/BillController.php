@@ -7,9 +7,7 @@ use App\Models\Bill;
 
 class BillController extends Controller
 {
-    /**
-     * List all bills for logged in user
-     */
+    
     public function index(Request $request)
     {
         $bills = $request->user()->bills()->latest()->get();
@@ -17,9 +15,7 @@ class BillController extends Controller
         return response()->json($bills);
     }
 
-    /**
-     * Save a new bill
-     */
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -36,9 +32,7 @@ class BillController extends Controller
         ], 201);
     }
 
-    /**
-     * Show a single bill
-     */
+    
     public function show(Request $request, $id)
     {
         $bill = $request->user()->bills()->findOrFail($id);
@@ -46,9 +40,7 @@ class BillController extends Controller
         return response()->json($bill);
     }
 
-    /**
-     * Update a bill
-     */
+    
     public function update(Request $request, $id)
     {
         $bill = $request->user()->bills()->findOrFail($id);
@@ -67,10 +59,7 @@ class BillController extends Controller
         ]);
     }
 
-    /**
-     * Delete a bill
-     */
-    public function destroy(Request $request, $id)
+        public function destroy(Request $request, $id)
     {
         $bill = $request->user()->bills()->findOrFail($id);
         $bill->delete();

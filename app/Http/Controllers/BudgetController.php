@@ -31,7 +31,7 @@ public function index()
     $validated['user_id'] = Auth::id();
     $budget = Budget::create($validated);
 
-    // Eager load category before returning
+   
     return response()->json($budget->load('category'), 201);
 }
 

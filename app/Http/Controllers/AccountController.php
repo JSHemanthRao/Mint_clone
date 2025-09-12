@@ -3,16 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
-use App\Models\Notification; // 🔔 Add this
+use App\Models\Notification; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AccountController extends Controller
 {
-    /**
-     * Get authenticated user (works with both JWT & session).
-     */
+    
     private function userId(): ?int
     {
         if (Auth::check()) {
@@ -27,9 +25,7 @@ class AccountController extends Controller
         }
     }
 
-    /**
-     * Save a notification.
-     */
+    
     private function notify(int $userId, string $message): void
     {
         Notification::create([
@@ -64,8 +60,8 @@ class AccountController extends Controller
         $validated['user_id'] = $userId;
         $account = Account::create($validated);
 
-        // 🔔 Notify
-        $this->notify($userId, '🏦 New account "' . $account->name . '" created');
+        
+        $this->notify($userId, ' New account "' . $account->name . '" created');
 
         return response()->json($account, 201);
     }
@@ -97,8 +93,8 @@ class AccountController extends Controller
         $validated['user_id'] = $userId;
         $account->update($validated);
 
-        // 🔔 Notify
-        $this->notify($userId, '✏️ Account "' . $account->name . '" updated');
+        
+        $this->notify($userId, ' Account "' . $account->name . '" updated');
 
         return response()->json($account, 200);
     }
@@ -110,8 +106,8 @@ class AccountController extends Controller
         $accountName = $account->name;
         $account->delete();
 
-        // 🔔 Notify
-        $this->notify($userId, '❌ Account "' . $accountName . '" deleted');
+        
+        $this->notify($userId, ' Account "' . $accountName . '" deleted');
 
         return response()->json(['message' => 'Account deleted']);
     }
@@ -127,8 +123,8 @@ class AccountController extends Controller
         $account->balance += $amount;
         $account->save();
 
-        // 🔔 Notify
-        $this->notify($userId, '💰 Deposited ₹' . $amount . ' into "' . $account->name . '"');
+        
+        $this->notify($userId, 'Deposited ₹' . $amount . ' into "' . $account->name . '"');
 
         return response()->json($account);
     }
@@ -148,8 +144,8 @@ class AccountController extends Controller
         $account->balance -= $amount;
         $account->save();
 
-        // 🔔 Notify
-        $this->notify($userId, '💸 Withdrew ₹' . $amount . ' from "' . $account->name . '"');
+        
+        $this->notify($userId, 'Withdrew ₹' . $amount . ' from "' . $account->name . '"');
 
         return response()->json($account);
     }
