@@ -66,7 +66,7 @@ class User extends Authenticatable implements JWTSubject
     // User.php
     public function accounts()
     {
-        return $this->hasMany(Account::class, 'user_id', 'id');
+        return $this->hasMany(Account::class);
     }
 
     public function bills()
