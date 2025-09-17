@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
-use App\Models\User;
+// use App\Models\User;
 use App\Models\Transaction;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index()
     {
         try {
@@ -106,24 +104,4 @@ class TransactionController extends Controller
         $transaction->update($validate);
         return response()->json($transaction, 200);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    // public function destroy(string $id)
-    // {
-    //     $transaction = Transaction::find($id);
-    //     if (!$transaction) {
-    //         return response()->json(['message' => 'Transaction not found'], 404);
-    //     }
-
-    //     // Ensure the transaction belongs to the authenticated user
-    //     $accountIds = Auth::user()->accounts()->pluck('id');
-    //     if (!$accountIds->contains($transaction->account_id)) {
-    //         return response()->json(['message' => 'Unauthorized'], 403);
-    //     }
-
-    //     $transaction->delete();
-    //     return response()->json(['message' => 'Transaction deleted']);
-    // }
 }

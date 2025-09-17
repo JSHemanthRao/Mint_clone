@@ -160,7 +160,7 @@
     });
 
     // Logout
-    document.getElementById("logoutBtn").addEventListener("click", async function () {
+    document.getElementById("logoutBtn").addEventListener("click", async function() {
       localStorage.removeItem("jwt_token");
       window.location.href = "/login";
     });
@@ -189,7 +189,7 @@
             list.innerHTML += `
               <div class="bg-gray-800 p-5 rounded-xl shadow-md w-full relative">
                 <button onclick="deleteTransaction(${data.id}, '${data.description}')" 
-                  class="absolute top-3 right-3 text-red-500 hover:text-red-700 font-bold">✖</button>
+               class="absolute top-3 right-3 text-red-500 hover:text-red-700 font-bold"></button>
                 <h3 class="text-lg font-semibold">${data.description}</h3>
                 <p class="text-gray-300">Amount: ₹${data.amount}</p>
                 <p class="text-gray-300">Date: ${data.date}</p>
@@ -208,7 +208,7 @@
 
     // Delete Transaction
     async function deleteTransaction(id, description) {
-      if (!confirm("Are you sure you want to delete this transaction?")) return;
+      // if (!confirm("Are you sure you want to delete this transaction?")) return;
 
       try {
         let res = await fetch(`/api/transactions/${id}`, {
@@ -220,7 +220,7 @@
         });
 
         if (res.ok) {
-          // addNotification(`❌ Transaction "${description}" deleted`);
+          // addNotification(`Transaction "${description}" deleted`);
           loadTransactions();
         } else {
           let err = await res.json();
@@ -257,7 +257,7 @@
     }
 
     // Handle Transaction Form Submit
-    document.getElementById('transactionsForm').addEventListener('submit', async function (event) {
+    document.getElementById('transactionsForm').addEventListener('submit', async function(event) {
       event.preventDefault();
 
       // Clear old errors
