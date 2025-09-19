@@ -111,7 +111,7 @@
     }
     function addNotification(message) {
       const notifications = JSON.parse(localStorage.getItem("notifications")) || [];
-      notifications.unshift("🔔 " + message);
+      notifications.unshift("" + message);
       localStorage.setItem("notifications", JSON.stringify(notifications));
       loadNotifications();
     }
