@@ -37,15 +37,15 @@
   <section class="bg-gray-800 py-16">
     <div class="max-w-6xl mx-auto px-6 grid gap-10 md:grid-cols-3">
       <div class="p-6 bg-gray-900 rounded-2xl shadow-md hover:shadow-xl transition">
-        <h3 class="text-xl font-semibold mb-4">💳 Manage Accounts</h3>
+        <h3 class="text-xl font-semibold mb-4">Manage Accounts</h3>
         <p class="text-gray-400">Keep track of all your accounts in one place with easy access and insights.</p>
       </div>
       <div class="p-6 bg-gray-900 rounded-2xl shadow-md hover:shadow-xl transition">
-        <h3 class="text-xl font-semibold mb-4">📊 Track Budgets</h3>
+        <h3 class="text-xl font-semibold mb-4">Track Budgets</h3>
         <p class="text-gray-400">Set monthly budgets and stay on top of your spending with detailed tracking.</p>
       </div>
       <div class="p-6 bg-gray-900 rounded-2xl shadow-md hover:shadow-xl transition">
-        <h3 class="text-xl font-semibold mb-4">🎯 Achieve Goals</h3>
+        <h3 class="text-xl font-semibold mb-4">Achieve Goals</h3>
         <p class="text-gray-400">Plan your financial goals and track progress towards achieving them.</p>
       </div>
     </div>
