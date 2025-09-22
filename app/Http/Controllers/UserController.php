@@ -10,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail; // We'll create this later
 
 class UserController extends Controller
 {
@@ -61,7 +63,12 @@ class UserController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
-        return response()->json($user, 201);
+        Mail::to($user->email)->send(new WelcomeEmail($user));
+
+        return redirect('/')->with('success', 'Registration successful! Check your email.');
+
+        // return response()->json($user, 201);
+
     }
 
     /**
