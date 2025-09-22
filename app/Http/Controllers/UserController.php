@@ -63,11 +63,11 @@ class UserController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
-        Mail::to($user->email)->send(new WelcomeEmail($user));
+        // Mail::to($user->email)->send(new WelcomeEmail($user));
 
-        return redirect('/')->with('success', 'Registration successful! Check your email.');
+        // return redirect('/')->with('success', 'Registration successful! Check your email.');
 
-        // return response()->json($user, 201);
+        return response()->json($user, 201);
 
     }
 

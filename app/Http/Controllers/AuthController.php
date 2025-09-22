@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Mail\WelcomeEmail;
 // use Illuminate\Routing\Controller;
 
 class AuthController extends Controller
@@ -25,7 +27,7 @@ class AuthController extends Controller
         ]);
 
         $token = JWTAuth::fromUser($user);
-
+        Mail::to($user->email)->send(new WelcomeEmail($user));
         return response()->json(compact('user', 'token'), 201);
     }
 
