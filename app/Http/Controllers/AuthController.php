@@ -27,6 +27,7 @@ class AuthController extends Controller
         ]);
 
         $token = JWTAuth::fromUser($user);
+        
         Mail::to($user->email)->send(new WelcomeEmail($user));
         return response()->json(compact('user', 'token'), 201);
     }
