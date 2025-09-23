@@ -49,13 +49,13 @@
   </header>
 
  
-  <!-- <main class="flex-1 p-6 space-y-10 lg:ml-64">
-    <h2 class="text-2xl font-bold mb-4">Welcome!</h2> -->
-    <!-- <section>
+  <main class="flex-1 p-6 space-y-10 lg:ml-64">
+    <h2 class="text-2xl font-bold mb-4">Welcome!</h2> 
+     <section>
       <h3 class="text-xl font-semibold mb-2">Accounts</h3>
       <div id="accountsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    </section> -->
-    <!-- <section>
+    </section> 
+    < <ection>
       <h3 class="text-xl font-semibold mb-2">Bills</h3>
       <div id="billsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
@@ -67,7 +67,7 @@
       <h3 class="text-xl font-semibold mb-2">Goals</h3>
       <div id="goalsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
-  </main> -->
+  </main>
 
  
   <script src="https://unpkg.com/feather-icons"></script>
