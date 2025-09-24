@@ -9,7 +9,7 @@
   <script src="https://unpkg.com/feather-icons"></script>
 </head>
 
-<body class="bg-gray-900 text-gray-100 min-h-screen flex lg:flex-col">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
 
   <!-- Navbar -->
   <header class="bg-gray-900/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
@@ -30,10 +30,7 @@
             <i data-feather="bell" class="w-5 h-5"></i>
             <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full hidden">0</span>
           </button>
-
-          <!-- Notification Dropdown -->
-          <div id="notificationDropdown"
-            class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+          <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
             <div class="p-4 border-b border-gray-700 flex justify-between items-center">
               <h3 class="text-lg font-semibold">Notifications</h3>
               <button id="clearNotifications" class="text-red-400 text-sm hover:underline">Clear All</button>
@@ -48,51 +45,44 @@
   </header>
 
   <!-- Main Content -->
-  <main class="flex-1 ml-0 sm:ml-64 p-6 flex flex-col items-center space-y-10">
+  <main class="flex-1 p-6 flex flex-col items-center space-y-10">
 
     <!-- Transactions Form -->
     <div class="bg-gray-800/90 backdrop-blur-lg p-6 rounded-2xl shadow-lg w-full max-w-md">
       <h2 class="text-2xl font-semibold text-center mb-6">Add Transaction</h2>
       <form id="transactionsForm" class="space-y-4">
-        <div>
-          <input name="description" type="text" placeholder="Description (e.g., Starbucks)"
-            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none">
-          <p class="text-red-400 text-sm mt-1 hidden" id="error-description"></p>
-        </div>
-        <div>
-          <input name="amount" type="number" placeholder="Amount"
-            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none">
-          <p class="text-red-400 text-sm mt-1 hidden" id="error-amount"></p>
-        </div>
-        <div>
-          <input name="date" type="date"
-            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none">
-          <p class="text-red-400 text-sm mt-1 hidden" id="error-date"></p>
-        </div>
-        <div>
-          <select name="category_id"
-            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none">
-            <option value="">-- Select Category --</option>
-            @foreach($categories as $category)
-            <option value="{{ $category->id }}">{{ $category->name }}</option>
-            @endforeach
-          </select>
-          <p class="text-red-400 text-sm mt-1 hidden" id="error-category_id"></p>
-        </div>
-        <div>
-          <select name="account_id" id="account_id_select"
-            class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none">
-            <option value="">-- Select Account --</option>
-          </select>
-          <p class="text-red-400 text-sm mt-1 hidden" id="error-account_id"></p>
-        </div>
+        <input name="description" type="text" placeholder="Description (e.g., Starbucks)"
+          class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none" required>
+
+        <input name="amount" type="number" placeholder="Amount"
+          class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none" required>
+
+        <input name="date" type="date"
+          class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none" required>
+
+        <select name="category_id"
+          class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none" required>
+          <option value="">-- Select Category --</option>
+          @foreach($categories as $category)
+          <option value="{{ $category->id }}">{{ $category->name }}</option>
+          @endforeach
+        </select>
+
+        <select name="account_id" id="account_id_select"
+          class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-orange-500 outline-none" required>
+          <option value="">-- Select Account --</option>
+        </select>
+
         <button type="submit"
           class="w-full bg-orange-600 hover:bg-orange-700 py-3 rounded-lg text-white font-medium">Save Transaction</button>
-        <p class="text-sm text-gray-400 mt-4 text-center">
-          <a href="/dashboard" class="text-indigo-400 hover:underline">← Back to Dashboard</a>
-        </p>
       </form>
     </div>
+
+    <!-- Accounts Balance Display -->
+    <!-- <div class="w-full max-w-3xl bg-gray-700/90 backdrop-blur-lg p-4 rounded-2xl shadow-lg">
+      <h2 class="text-xl font-semibold mb-4 text-center">Accounts Balances</h2>
+      <div id="accountsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+    </div> -->
 
     <!-- Transactions List -->
     <div class="w-full max-w-5xl bg-gray-700/90 backdrop-blur-lg p-6 rounded-2xl shadow-lg">
@@ -105,18 +95,15 @@
     feather.replace();
 
     const token = localStorage.getItem("jwt_token");
-    if (!token) {
-      window.location.href = "/login";
-    }
+    if (!token) window.location.href = "/login";
 
-    // --- Notifications ---
+    // ------------------ Notifications ------------------
+    let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
     const notificationBtn = document.getElementById("notificationBtn");
     const notificationDropdown = document.getElementById("notificationDropdown");
     const notificationBadge = document.getElementById("notificationBadge");
     const notificationList = document.getElementById("notificationList");
     const clearNotificationsBtn = document.getElementById("clearNotifications");
-
-    let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
 
     function renderNotifications() {
       notificationList.innerHTML = "";
@@ -126,14 +113,10 @@
         li.textContent = n;
         notificationList.appendChild(li);
       });
-
-      if (notifications.length > 0) {
+      if (notifications.length) {
         notificationBadge.textContent = notifications.length;
         notificationBadge.style.display = "block";
-      } else {
-        notificationBadge.style.display = "none";
-      }
-
+      } else notificationBadge.style.display = "none";
       localStorage.setItem("notifications", JSON.stringify(notifications));
     }
 
@@ -142,172 +125,94 @@
       renderNotifications();
     }
 
-    renderNotifications();
+    notificationBtn.addEventListener("click", () => notificationDropdown.classList.toggle("hidden"));
+    clearNotificationsBtn.addEventListener("click", () => { notifications = []; renderNotifications(); });
+    document.addEventListener("click", (e) => { if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) notificationDropdown.classList.add("hidden"); });
 
-    notificationBtn.addEventListener("click", () => {
-      notificationDropdown.classList.toggle("hidden");
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-        notificationDropdown.classList.add("hidden");
-      }
-    });
-
-    clearNotificationsBtn.addEventListener("click", () => {
-      notifications = [];
-      renderNotifications();
-    });
-
-    // Logout
-    document.getElementById("logoutBtn").addEventListener("click", async function() {
+    // ------------------ Logout ------------------
+    document.getElementById("logoutBtn").addEventListener("click", () => {
       localStorage.removeItem("jwt_token");
       window.location.href = "/login";
     });
 
-    // Load Transactions
-    async function loadTransactions() {
-      try {
-        let res = await fetch('/api/transactions', {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-          }
-        });
-
-        let transactions = await res.json();
-        console.log("Transactions response:", transactions);
-
-        if (res.ok) {
-          let list = document.getElementById('transactionsList');
-          list.innerHTML = "";
-
-          let items = transactions.data ? transactions.data : transactions; // handle pagination
-
-          items.forEach(data => {
-            list.innerHTML += `
-              <div class="bg-gray-800 p-5 rounded-xl shadow-md w-full relative">
-                <button onclick="deleteTransaction(${data.id}, '${data.description}')" 
-               class="absolute top-3 right-3 text-red-500 hover:text-red-700 font-bold"></button>
-                <h3 class="text-lg font-semibold">${data.description}</h3>
-                <p class="text-gray-300">Amount: ₹${data.amount}</p>
-                <p class="text-gray-300">Date: ${data.date}</p>
-                <p class="text-gray-400 text-sm">Category: ${data.category ? data.category.name : "N/A"}</p>
-                <p class="text-gray-400 text-sm">Account: ${data.account ? data.account.name : "N/A"}</p>
-              </div>
-            `;
-          });
-        } else {
-          console.error("Transactions fetch failed:", transactions);
-        }
-      } catch (error) {
-        console.error("Error loading transactions:", error);
-      }
-    }
-
-    // Delete Transaction
-    async function deleteTransaction(id, description) {
-      // if (!confirm("Are you sure you want to delete this transaction?")) return;
-
-      try {
-        let res = await fetch(`/api/transactions/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-          }
-        });
-
-        if (res.ok) {
-          // addNotification(`Transaction "${description}" deleted`);
-          loadTransactions();
-        } else {
-          let err = await res.json();
-          console.error("Delete failed:", err);
-        }
-      } catch (error) {
-        console.error("Error deleting transaction:", error);
-      }
-    }
-
-    // Load Accounts
+    // ------------------ Accounts ------------------
+    let accountsData = [];
     async function loadAccounts() {
       try {
         let res = await fetch('/api/accounts', {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-          }
+          headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + token }
         });
-        let accounts = await res.json();
+        let data = await res.json();
         if (res.ok) {
+          accountsData = data;
           const select = document.getElementById('account_id_select');
+          const listDiv = document.getElementById('accountsList');
           select.innerHTML = '<option value="">-- Select Account --</option>';
-          accounts.forEach(account => {
-            select.innerHTML += `<option value="${account.id}">${account.name}</option>`;
+          listDiv.innerHTML = "";
+          data.forEach(a => {
+            select.innerHTML += `<option value="${a.id}">${a.name} (₹${a.balance})</option>`;
+            listDiv.innerHTML += `<div class="p-3 bg-gray-800 rounded-lg text-white flex justify-between">${a.name}<span>₹${a.balance}</span></div>`;
           });
-        } else {
-          console.error("Accounts fetch failed:", accounts);
         }
-      } catch (error) {
-        console.error("Error loading accounts", error);
-      }
+      } catch (e) { console.error(e); }
     }
 
-    // Handle Transaction Form Submit
-    document.getElementById('transactionsForm').addEventListener('submit', async function(event) {
-      event.preventDefault();
-
-      // Clear old errors
-      document.querySelectorAll('[id^="error-"]').forEach(el => {
-        el.textContent = "";
-        el.classList.add("hidden");
-      });
-
-      let transactionData = {
-        account_id: document.querySelector('select[name="account_id"]').value,
-        category_id: document.querySelector('select[name="category_id"]').value,
-        description: document.querySelector('input[name="description"]').value,
-        amount: document.querySelector('input[name="amount"]').value,
-        date: document.querySelector('input[name="date"]').value
-      };
-
-      let res = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify(transactionData)
-      });
-
-      let data = await res.json();
-      console.log("Transaction create response:", data);
-
-      if (res.ok) {
-        addNotification(`💰 Transaction "${data.description}" of ₹${data.amount} added`);
-        document.getElementById('transactionsForm').reset();
-        loadTransactions();
-      } else if (data.errors) {
-        for (let field in data.errors) {
-          let errorEl = document.getElementById(`error-${field}`);
-          if (errorEl) {
-            errorEl.textContent = data.errors[field][0];
-            errorEl.classList.remove("hidden");
-          }
+    // ------------------ Transactions ------------------
+    async function loadTransactions() {
+      try {
+        let res = await fetch('/api/transactions', {
+          headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + token }
+        });
+        let transactions = await res.json();
+        if (res.ok) {
+          const list = document.getElementById('transactionsList');
+          list.innerHTML = "";
+          transactions.forEach(t => {
+            list.innerHTML += `
+              <div class="bg-gray-800 p-5 rounded-xl shadow-md">
+                <h3 class="text-lg font-semibold">${t.description}</h3>
+                <p class="text-gray-300">Amount: ₹${t.amount}</p>
+                <p class="text-gray-300">Date: ${t.date}</p>
+                <p class="text-gray-400 text-sm">Category: ${t.category ? t.category.name : 'N/A'}</p>
+                <p class="text-gray-400 text-sm">Account: ${t.account ? t.account.name : 'N/A'}</p>
+              </div>
+            `;
+          });
         }
-      }
+      } catch (e) { console.error(e); }
+    }
+
+    // ------------------ Form Submit ------------------
+    document.getElementById('transactionsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        account_id: e.target.account_id.value,
+        category_id: e.target.category_id.value,
+        description: e.target.description.value,
+        amount: parseFloat(e.target.amount.value),
+        date: e.target.date.value
+      };
+      try {
+        let res = await fetch('/api/transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(data)
+        });
+        let t = await res.json();
+        if (res.ok) {
+          addNotification(`💰 Transaction "${t.description}" added`);
+          e.target.reset();
+          await loadAccounts();
+          await loadTransactions();
+        } else console.error(t);
+      } catch (e) { console.error(e); }
     });
 
-    // Initialize
-    window.onload = () => {
-      loadAccounts();
-      loadTransactions();
+    window.onload = async () => {
+      await loadAccounts();
+      await loadTransactions();
+      renderNotifications();
     };
   </script>
 </body>
-
 </html>

@@ -10,7 +10,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AccountController extends Controller
 {
-    
+    // Get current user ID from Auth or JWT
     private function userId(): ?int
     {
         if (Auth::check()) {
@@ -25,7 +25,7 @@ class AccountController extends Controller
         }
     }
 
-    
+    // Create a notification
     private function notify(int $userId, string $message): void
     {
         Notification::create([
@@ -34,6 +34,7 @@ class AccountController extends Controller
         ]);
     }
 
+    // List all accounts for the user
     public function index()
     {
         $userId = $this->userId();
@@ -44,12 +45,13 @@ class AccountController extends Controller
         return response()->json(Account::where('user_id', $userId)->get());
     }
 
+    // Store a new account
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'    => 'required|string|max:255',
-            'type'    => 'required|string|max:100',
-            'balance' => 'required|numeric'
+            'name'            => 'required|string|max:255',
+            'type'            => 'required|string|max:100',
+            'initial_balance' => 'nullable|numeric'
         ]);
 
         $userId = $this->userId();
@@ -58,14 +60,16 @@ class AccountController extends Controller
         }
 
         $validated['user_id'] = $userId;
+        $validated['balance'] = $validated['initial_balance'] ?? 0;
+
         $account = Account::create($validated);
 
-        
         $this->notify($userId, ' New account "' . $account->name . '" created');
 
         return response()->json($account, 201);
     }
 
+    // Show a single account
     public function show($id)
     {
         $userId = $this->userId();
@@ -73,12 +77,14 @@ class AccountController extends Controller
         return response()->json($account);
     }
 
+    // Edit account view
     public function edit($id)
     {
         $account = Account::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
         return view('edit', compact('account'));
     }
 
+    // Update account
     public function update(Request $request, $id)
     {
         $userId = $this->userId();
@@ -93,12 +99,12 @@ class AccountController extends Controller
         $validated['user_id'] = $userId;
         $account->update($validated);
 
-        
         $this->notify($userId, ' Account "' . $account->name . '" updated');
 
         return response()->json($account, 200);
     }
 
+    // Delete account
     public function destroy($id)
     {
         $userId = $this->userId();
@@ -106,12 +112,12 @@ class AccountController extends Controller
         $accountName = $account->name;
         $account->delete();
 
-        
         $this->notify($userId, ' Account "' . $accountName . '" deleted');
 
         return response()->json(['message' => 'Account deleted']);
     }
 
+    // Deposit money
     public function deposit(Request $request, $id)
     {
         $userId = $this->userId();
@@ -123,12 +129,12 @@ class AccountController extends Controller
         $account->balance += $amount;
         $account->save();
 
-        
         $this->notify($userId, 'Deposited ₹' . $amount . ' into "' . $account->name . '"');
 
         return response()->json($account);
     }
 
+    // Withdraw money
     public function withdraw(Request $request, $id)
     {
         $userId = $this->userId();
@@ -144,7 +150,6 @@ class AccountController extends Controller
         $account->balance -= $amount;
         $account->save();
 
-        
         $this->notify($userId, 'Withdrew ₹' . $amount . ' from "' . $account->name . '"');
 
         return response()->json($account);

@@ -51,18 +51,18 @@
   </header>
 
   <!-- Main Content -->
-  <main class="ml-64 flex-1 p-8 space-y-8">
+  <main class="ml-0 lg:ml-64 flex-1 p-8 space-y-8">
 
     <!-- Budget Form -->
     <div class="bg-gray-800/90 backdrop-blur-lg p-6 rounded-2xl shadow-lg w-full max-w-xl mx-auto mb-8">
       <h2 class="text-xl font-semibold mb-4 text-center text-white">Create a Budget</h2>
       <form id="budgetForm" class="flex flex-col gap-4">
         @csrf
-        <input type="number" name="amount" placeholder="Enter Budget Amount"
+        <input type="number" name="amount" id="amount" placeholder="Enter Budget Amount"
           class="w-full p-3 rounded-lg border border-gray-600 bg-gray-700 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
           required>
 
-        <select name="category_id"
+        <select name="category_id" id="category_id"
           class="w-full p-3 rounded-lg border border-gray-600 bg-gray-700 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
           required>
           <option value="">-- Select Category --</option>
@@ -94,7 +94,10 @@
     Budget created successfully
   </div>
 
+  <script src="https://unpkg.com/feather-icons"></script>
   <script>
+    feather.replace();
+
     const token = localStorage.getItem("jwt_token");
     if (!token) {
       window.location.href = "/login";
@@ -102,9 +105,11 @@
 
     const budgetsList = document.getElementById("budgetsList");
 
+    // ------------------ Render Budget ------------------
     function renderBudget(budget) {
       const card = document.createElement("div");
-      card.className = "bg-gray-700 p-5 rounded-xl shadow-md w-full h-44 flex flex-col justify-between hover:shadow-xl transition";
+      card.className =
+        "bg-gray-700 p-5 rounded-xl shadow-md w-full h-44 flex flex-col justify-between hover:shadow-xl transition";
 
       card.innerHTML = `
         <div>
@@ -116,7 +121,6 @@
           Delete Budget
         </button>
       `;
-
       budgetsList.appendChild(card);
     }
 
@@ -132,18 +136,17 @@
       }, 3000);
     }
 
+    // ------------------ Load Budgets ------------------
     async function loadBudgets() {
       try {
-        let res = await fetch('/api/budgets', {
-          method: 'GET',
+        const res = await fetch("/api/budgets", {
           headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
+            "Accept": "application/json",
+            "Authorization": "Bearer " + token
           }
         });
 
-        let data = await res.json();
-
+        const data = await res.json();
         if (res.ok) {
           budgetsList.innerHTML = "";
           data.forEach(budget => renderBudget(budget));
@@ -155,15 +158,48 @@
       }
     }
 
+    // ------------------ Create Budget ------------------
+    document.getElementById('budgetForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const formData = new FormData(this);
+
+      try {
+        const res = await fetch("/api/budgets", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + token
+          },
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          renderBudget(data);
+          this.reset();
+          showPopup("Budget created successfully!");
+          saveNotification("✅ Budget created");
+        } else {
+          alert("Failed to create budget: " + (data.message ?? JSON.stringify(data)));
+        }
+      } catch (err) {
+        console.error("Error creating budget:", err);
+        alert("Something went wrong!");
+      }
+    });
+
+    // ------------------ Delete Budget ------------------
     async function deleteBudget(id, btn) {
       if (!confirm("Are you sure you want to delete this budget?")) return;
 
       try {
-        let res = await fetch(`/api/budgets/${id}`, {
+        const res = await fetch(`/api/budgets/${id}`, {
           method: "DELETE",
           headers: {
             "Accept": "application/json",
-            "Authorization": "Bearer " + token
+            "Authorization": "Bearer " + token,
+            "X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value
           }
         });
 
@@ -172,7 +208,7 @@
           showPopup("Budget deleted successfully!");
           saveNotification("❌ Budget deleted");
         } else {
-          let error = await res.json();
+          const error = await res.json();
           alert("Failed to delete budget: " + (error.message ?? "Unknown error"));
         }
       } catch (err) {
@@ -180,35 +216,7 @@
       }
     }
 
-    document.getElementById('budgetForm').addEventListener('submit', async function (event) {
-      event.preventDefault();
-
-      let formData = new FormData(this);
-
-      let res = await fetch("{{ route('budgets.store') }}", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + token,
-          "X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value
-        },
-        body: formData
-      });
-
-      let data = await res.json();
-
-      if (res.ok) {
-        renderBudget(data);
-        this.reset();
-        showPopup("Budget created successfully!");
-        saveNotification("✅ Budget created");
-      } else {
-        alert("Failed to create budget: " + (data.message ?? "Unknown error"));
-      }
-    });
-
-    loadBudgets();
-
-    // ------------------ Persistent Notifications -------------------
+    // ------------------ Notifications ------------------
     const notificationBtn = document.getElementById("notificationBtn");
     const notificationDropdown = document.getElementById("notificationDropdown");
     const notificationBadge = document.getElementById("notificationBadge");
@@ -255,11 +263,9 @@
       }
     });
 
-    // Initialize notifications on page load
+    // ------------------ Initialize ------------------
+    loadBudgets();
     loadNotifications();
   </script>
-
-  <script src="https://unpkg.com/feather-icons"></script>
-  <script>feather.replace();</script>
 </body>
 </html>

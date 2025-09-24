@@ -20,16 +20,4 @@ class Account extends Model
         return $this->hasMany(Transaction::class);
     }
 
-    public function getBalanceAttribute()
-    {
-        $income = $this->transactions()
-            ->where('type', 'income')
-            ->sum('amount');
-
-        $expense = $this->transactions()
-            ->where('type', 'expense')
-            ->sum('amount');
-
-        return $income - $expense;
-    }
 }

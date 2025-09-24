@@ -22,17 +22,13 @@
         <a href="{{ route('transactions') }}" class="hover:text-green-400 font-semibold">Transactions</a>
         <a href="{{ route('goals') }}" class="hover:text-green-400 font-semibold">Goals</a>
 
-        
         <div class="relative">
           <button id="notificationBtn" class="p-2 hover:bg-gray-700 rounded-full relative">
             <i data-feather="bell" class="w-5 h-5"></i>
-            <span id="notificationBadge"
-              class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full hidden"></span>
+            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-xs text-white px-1 rounded-full hidden"></span>
           </button>
 
-          
-          <div id="notificationDropdown"
-            class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+          <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
             <div class="p-4 border-b border-gray-700">
               <h3 class="text-lg font-semibold">Notifications</h3>
             </div>
@@ -43,41 +39,42 @@
           </div>
         </div>
       </nav>
-      <button id="logoutBtn"
-        class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
+      <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold">Logout</button>
     </div>
   </header>
 
- 
+  <!-- Main Content -->
   <main class="flex-1 p-6 space-y-10 lg:ml-64">
-    <h2 class="text-2xl font-bold mb-4">Welcome!</h2> 
-     <section>
+    <h2 class="text-2xl font-bold mb-4">Welcome!</h2>
+
+    <section>
       <h3 class="text-xl font-semibold mb-2">Accounts</h3>
       <div id="accountsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    </section> 
-    < <ection>
+    </section>
+
+    <section>
       <h3 class="text-xl font-semibold mb-2">Bills</h3>
       <div id="billsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
+
     <section>
       <h3 class="text-xl font-semibold mb-2">Budgets</h3>
       <div id="budgetsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
+
     <section>
       <h3 class="text-xl font-semibold mb-2">Goals</h3>
       <div id="goalsList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </section>
   </main>
 
- 
   <script src="https://unpkg.com/feather-icons"></script>
-
   <script>
     feather.replace();
     const token = localStorage.getItem("jwt_token");
     if (!token) window.location.href = "/login";
 
-    
+    // Notifications
     const notificationBtn = document.getElementById("notificationBtn");
     const notificationDropdown = document.getElementById("notificationDropdown");
     const notificationBadge = document.getElementById("notificationBadge");
@@ -95,33 +92,27 @@
       });
       updateBadge(notifications.length);
     }
+
     function updateBadge(count) {
       if (count > 0) {
         notificationBadge.textContent = count;
         notificationBadge.classList.remove("hidden");
       } else notificationBadge.classList.add("hidden");
     }
+
     function addNotification(message) {
       const notifications = JSON.parse(localStorage.getItem("notifications")) || [];
       notifications.unshift("" + message);
       localStorage.setItem("notifications", JSON.stringify(notifications));
       loadNotifications();
     }
-    notificationBtn.addEventListener("click", () => {
-      notificationDropdown.classList.toggle("hidden");
-    });
-    clearBtn.addEventListener("click", () => {
-      localStorage.removeItem("notifications");
-      loadNotifications();
-    });
-    document.addEventListener("click", (e) => {
-      if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-        notificationDropdown.classList.add("hidden");
-      }
-    });
+
+    notificationBtn.addEventListener("click", () => notificationDropdown.classList.toggle("hidden"));
+    clearBtn.addEventListener("click", () => { localStorage.removeItem("notifications"); loadNotifications(); });
+    document.addEventListener("click", (e) => { if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) notificationDropdown.classList.add("hidden"); });
     loadNotifications();
 
-    
+    // Generic fetch function
     async function fetchItems(endpoint, containerId, renderCard) {
       const res = await fetch(`/api/${endpoint}`, { headers: { Authorization: "Bearer " + token } });
       const data = await res.json();
@@ -130,19 +121,7 @@
       data.forEach(item => container.appendChild(renderCard(item)));
     }
 
-    async function deleteItem(endpoint, id, onSuccessMsg, reloadFn) {
-      if (!confirm("Are you sure?")) return;
-      const res = await fetch(`/api/${endpoint}/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: "Bearer " + token }
-      });
-      if (res.ok) {
-        addNotification(onSuccessMsg);
-        reloadFn();
-      }
-    }
-
-    
+    // Load Accounts
     function loadAccounts() {
       fetchItems("accounts", "accountsList", (acc) => {
         const div = document.createElement("div");
@@ -160,14 +139,8 @@
               <i data-feather="${isHidden ? "eye-off" : "eye"}"></i>
             </button>
           </div>
-          <button class="bg-red-600 px-2 py-1 rounded mt-3">Delete</button>
         `;
 
-        
-        div.querySelector("button.bg-red-600").onclick = () =>
-          deleteItem("accounts", acc.id, "Account deleted", loadAccounts);
-
-        
         const eyeBtn = div.querySelector(".toggle-eye");
         const balanceEl = div.querySelector(".balance");
 
@@ -175,52 +148,45 @@
           isHidden = !isHidden;
           balanceEl.textContent = isHidden ? "₹•••••" : "₹" + balance;
           eyeBtn.innerHTML = `<i data-feather="${isHidden ? "eye-off" : "eye"}"></i>`;
-          feather.replace(); 
+          feather.replace();
         });
 
-        feather.replace(); 
+        feather.replace();
         return div;
       });
     }
 
-    
+    // Load Bills
     function loadBills() {
       fetchItems("bills", "billsList", (bill) => {
         const div = document.createElement("div");
         div.className = "bg-gray-800 p-4 rounded shadow";
-        div.innerHTML = `<h4>${bill.name}</h4><p>₹${bill.amount}</p><p>${bill.due_date}</p>
-          <button class="bg-red-600 px-2 py-1 rounded mt-2">Delete</button>`;
-        div.querySelector("button").onclick = () => deleteItem("bills", bill.id, "Bill deleted", loadBills);
+        div.innerHTML = `<h4>${bill.name}</h4><p>₹${bill.amount}</p><p>${bill.due_date}</p>`;
         return div;
       });
     }
 
-    
+    // Load Budgets
     function loadBudgets() {
       fetchItems("budgets", "budgetsList", (budget) => {
         const div = document.createElement("div");
         div.className = "bg-gray-800 p-4 rounded shadow";
-        div.innerHTML = `<h4>${budget.category?.name || budget.category}</h4><p>₹${budget.amount}</p>
-          <button class="bg-red-600 px-2 py-1 rounded mt-2">Delete</button>`;
-        div.querySelector("button").onclick = () => deleteItem("budgets", budget.id, "Budget deleted", loadBudgets);
+        div.innerHTML = `<h4>${budget.category?.name || budget.category}</h4><p>₹${budget.amount}</p>`;
         return div;
       });
     }
 
-   
+    // Load Goals
     function loadGoals() {
       fetchItems("goals", "goalsList", (goal) => {
         const div = document.createElement("div");
         div.className = "bg-gray-800 p-4 rounded shadow";
         div.innerHTML = `<h4>${goal.name}</h4><p>Target: ₹${goal.target_amount}</p>
-          <p>Current: ₹${goal.current_amount}</p><p>${goal.due_date}</p>
-          <button class="bg-red-600 px-2 py-1 rounded mt-2">Delete</button>`;
-        div.querySelector("button").onclick = () => deleteItem("goals", goal.id, "Goal deleted", loadGoals);
+                         <p>Current: ₹${goal.current_amount}</p><p>${goal.due_date}</p>`;
         return div;
       });
     }
 
-    
     loadAccounts();
     loadBills();
     loadBudgets();
