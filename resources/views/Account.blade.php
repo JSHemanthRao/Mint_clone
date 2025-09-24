@@ -189,7 +189,7 @@
       }
     });
 
-    // ✅ Accounts CRUD Logic
+    //  Accounts CRUD Logic
     let accountsList = document.getElementById("accountsList");
     let accountForm = document.getElementById("accountForm");
     let successToast = document.getElementById("successToast");
@@ -256,7 +256,7 @@
         let data = await res.json();
         if (res.ok) {
           loadAccounts();
-          addNotification(`💰 ${action === "deposit" ? "Deposited" : "Withdrew"} ₹${amount} in account #${accountId}`);
+          addNotification(` ${action === "deposit" ? "Deposited" : "Withdrew"} ₹${amount} in account #${accountId}`);
         } else {
           alert("Error: " + (data.error || JSON.stringify(data)));
         }
@@ -290,7 +290,7 @@
           accountForm.reset();
           showToast("Account created successfully!");
           loadAccounts();
-          addNotification(`🏦 New account "${formData.name}" created`);
+          addNotification(` New account "${formData.name}" created`);
         } else {
           alert("Error: " + (data.error || JSON.stringify(data)));
         }

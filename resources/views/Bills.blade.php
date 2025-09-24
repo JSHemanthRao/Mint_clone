@@ -98,7 +98,7 @@
 
     let editingBillId = null;
 
-    // 🔔 Notification System
+    //  Notification System
     const notificationBtn = document.getElementById("notificationBtn");
     const notificationDropdown = document.getElementById("notificationDropdown");
     const notificationBadge = document.getElementById("notificationBadge");
@@ -124,7 +124,7 @@
 
     function addNotification(msg) {
       let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
-      notifications.unshift("🔔 " + msg);
+      notifications.unshift(" " + msg);
       localStorage.setItem("notifications", JSON.stringify(notifications));
       loadNotifications();
     }
@@ -250,3 +250,4 @@
   </script>
 </body>
 </html>
+
