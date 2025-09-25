@@ -135,6 +135,7 @@
 
   async function addNotification(message) {
     const token = localStorage.getItem("jwt_token");
+    
     await fetch("/api/notifications", {
       method: "POST",
       headers: {
