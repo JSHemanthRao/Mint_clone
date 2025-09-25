@@ -78,11 +78,11 @@
       </form>
     </div>
 
-    <!-- Accounts Balance Display -->
-    <!-- <div class="w-full max-w-3xl bg-gray-700/90 backdrop-blur-lg p-4 rounded-2xl shadow-lg">
+    <!-- Accounts Balance Display  -->
+     <div class="w-full max-w-3xl bg-gray-700/90 backdrop-blur-lg p-4 rounded-2xl shadow-lg">
       <h2 class="text-xl font-semibold mb-4 text-center">Accounts Balances</h2>
       <div id="accountsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-    </div> -->
+    </div>
 
     <!-- Transactions List -->
     <div class="w-full max-w-5xl bg-gray-700/90 backdrop-blur-lg p-6 rounded-2xl shadow-lg">
