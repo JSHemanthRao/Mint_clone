@@ -9,7 +9,8 @@
 </head>
 
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
-  <!-- Navbar -->
+
+  
   <header class="bg-gray-900/90 backdrop-blur-lg shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <a href="/" class="text-2xl font-bold text-green-400">Mint Clone</a>
@@ -122,7 +123,7 @@
       data.forEach(item => container.appendChild(renderCard(item)));
     }
 
-    // Load Accounts
+    
     function loadAccounts() {
       fetchItems("accounts", "accountsList", (acc) => {
         const div = document.createElement("div");
@@ -157,7 +158,7 @@
       });
     }
 
-    // Load Bills
+    
     function loadBills() {
       fetchItems("bills", "billsList", (bill) => {
         const div = document.createElement("div");
@@ -167,7 +168,7 @@
       });
     }
 
-    // Load Budgets
+    
     function loadBudgets() {
       fetchItems("budgets", "budgetsList", (budget) => {
         const div = document.createElement("div");
@@ -177,7 +178,7 @@
       });
     }
 
-    // Load Goals
+   
     function loadGoals() {
       fetchItems("goals", "goalsList", (goal) => {
         const div = document.createElement("div");
