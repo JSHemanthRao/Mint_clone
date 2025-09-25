@@ -61,7 +61,6 @@
       <a href="/login" class="text-blue-400 hover:underline">Login</a>
     </p>
   </div>
-
   <script>
     localStorage.removeItem("jwt_token");
     document.getElementById('registerForm').addEventListener('submit', async function(event) {
@@ -137,8 +136,6 @@
     
     });
   </script>
-
-
 </body>
 
 </html>

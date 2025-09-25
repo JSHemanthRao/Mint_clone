@@ -43,7 +43,7 @@
     </div>
   </header>
 
-  <!-- Main Content -->
+ 
   <main class="flex-1 p-6 space-y-10 lg:ml-64">
     <h2 class="text-2xl font-bold mb-4">Welcome!</h2>
 
@@ -69,12 +69,13 @@
   </main>
 
   <script src="https://unpkg.com/feather-icons"></script>
+
   <script>
     feather.replace();
     const token = localStorage.getItem("jwt_token");
     if (!token) window.location.href = "/login";
 
-    // Notifications
+    
     const notificationBtn = document.getElementById("notificationBtn");
     const notificationDropdown = document.getElementById("notificationDropdown");
     const notificationBadge = document.getElementById("notificationBadge");
@@ -112,7 +113,7 @@
     document.addEventListener("click", (e) => { if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) notificationDropdown.classList.add("hidden"); });
     loadNotifications();
 
-    // Generic fetch function
+    
     async function fetchItems(endpoint, containerId, renderCard) {
       const res = await fetch(`/api/${endpoint}`, { headers: { Authorization: "Bearer " + token } });
       const data = await res.json();

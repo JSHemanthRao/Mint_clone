@@ -100,7 +100,7 @@
 <script>
   feather.replace();
 
-  /* ---------------- Notifications ---------------- */
+
   const notificationBtn = document.getElementById("notificationBtn");
   const notificationDropdown = document.getElementById("notificationDropdown");
   const notificationBadge = document.getElementById("notificationBadge");
