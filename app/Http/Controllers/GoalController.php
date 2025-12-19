@@ -22,7 +22,7 @@ class GoalController extends Controller
             'due_date' => 'required|date',
         ]);
 
-        $validated['user_id'] = Auth::id(); // Securely set user_id
+        $validated['user_id'] = Auth::id(); 
         $goal = Goal::create($validated);
         return response()->json($goal, 201);
     }

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Mail\WelcomeEmail;
-// use Illuminate\Routing\Controller;
+
 
 class AuthController extends Controller
 {
@@ -48,9 +48,6 @@ class AuthController extends Controller
         return response()->json(compact('token'));
     }
 
-    // public function me(){
-    //     return response()->json(['user' => JWTAuth::user()]);
-    // }
 
     public function me()
 {

@@ -15,7 +15,7 @@ class TransactionController extends Controller
     public function index()
     {
         try {
-            $accountIds = Auth::user()->accounts()->pluck('id');
+            $accountIds = Account::where('user_id', Auth::id())->pluck('id');
 
             $transactions = Transaction::with(['category', 'account'])
                 ->whereIn('account_id', $accountIds)
@@ -41,8 +41,9 @@ class TransactionController extends Controller
             'account_id' => 'required|exists:accounts,id',
             'category_id' => 'required|exists:categories,id',
             'description' => 'required|string|max:255',
-            'amount' => 'required|numeric|min:0.01',
-            'date' => 'required|date'
+            'amount' => 'required|numeric',
+            'date' => 'required|date',
+            'type' => 'required|in:income,expense'
         ]);
 
         $account = Account::where('id', $validated['account_id'])
@@ -55,8 +56,12 @@ class TransactionController extends Controller
 
         DB::beginTransaction();
         try {
-            // Deduct from account balance
-            $account->balance -= $validated['amount'];
+            // Adjust balance based on type
+            if ($validated['type'] === 'expense') {
+                $account->balance -= abs($validated['amount']);
+            } elseif ($validated['type'] === 'income') {
+                $account->balance += abs($validated['amount']);
+            }
             $account->save();
 
             $validated['user_id'] = Auth::id();
@@ -74,7 +79,7 @@ class TransactionController extends Controller
 
     public function show($id)
     {
-        $accountIds = Auth::user()->accounts()->pluck('id');
+        $accountIds = Account::where('user_id', Auth::id())->pluck('id');
 
         $transaction = Transaction::with(['category', 'account'])
             ->whereIn('account_id', $accountIds)
@@ -95,7 +100,7 @@ class TransactionController extends Controller
             return response()->json(['message' => 'Transaction not found'], 404);
         }
 
-        $accountIds = Auth::user()->accounts()->pluck('id');
+        $accountIds = Account::where('user_id', Auth::id())->pluck('id');
         if (!$accountIds->contains($transaction->account_id)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -104,19 +109,29 @@ class TransactionController extends Controller
             'account_id' => 'required|exists:accounts,id',
             'category_id' => 'required|exists:categories,id',
             'description' => 'required|string|max:255',
-            'amount' => 'required|numeric|min:0.01',
-            'date' => 'required|date'
+            'amount' => 'required|numeric',
+            'date' => 'required|date',
+            'type' => 'required|in:income,expense'
         ]);
 
         DB::beginTransaction();
         try {
-            // Adjust account balance: remove old transaction amount and apply new amount
+            // Reverse old transaction's balance effect
             $oldAccount = $transaction->account;
-            $oldAccount->balance += $transaction->amount;
+            if ($transaction->type === 'expense') {
+                $oldAccount->balance += abs($transaction->amount);
+            } elseif ($transaction->type === 'income') {
+                $oldAccount->balance -= abs($transaction->amount);
+            }
             $oldAccount->save();
 
+            // Apply new transaction's balance effect
             $newAccount = Account::find($validated['account_id']);
-            $newAccount->balance -= $validated['amount'];
+            if ($validated['type'] === 'expense') {
+                $newAccount->balance -= abs($validated['amount']);
+            } elseif ($validated['type'] === 'income') {
+                $newAccount->balance += abs($validated['amount']);
+            }
             $newAccount->save();
 
             $transaction->update($validated);
@@ -136,16 +151,20 @@ class TransactionController extends Controller
         $transaction = Transaction::find($id);
         if (!$transaction) return response()->json(['message' => 'Transaction not found'], 404);
 
-        $accountIds = Auth::user()->accounts()->pluck('id');
+        $accountIds = Account::where('user_id', Auth::id())->pluck('id');
         if (!$accountIds->contains($transaction->account_id)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         DB::beginTransaction();
         try {
-            // Refund amount back to account
+            // Reverse transaction's balance effect
             $account = $transaction->account;
-            $account->balance += $transaction->amount;
+            if ($transaction->type === 'expense') {
+                $account->balance += abs($transaction->amount);
+            } elseif ($transaction->type === 'income') {
+                $account->balance -= abs($transaction->amount);
+            }
             $account->save();
 
             $transaction->delete();

@@ -69,7 +69,7 @@ class AccountController extends Controller
         return response()->json($account, 201);
     }
 
-    // Show a single account
+    
     public function show($id)
     {
         $userId = $this->userId();
@@ -77,14 +77,14 @@ class AccountController extends Controller
         return response()->json($account);
     }
 
-    // Edit account view
+
     public function edit($id)
     {
         $account = Account::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
         return view('edit', compact('account'));
     }
 
-    // Update account
+
     public function update(Request $request, $id)
     {
         $userId = $this->userId();
@@ -104,7 +104,7 @@ class AccountController extends Controller
         return response()->json($account, 200);
     }
 
-    // Delete account
+
     public function destroy($id)
     {
         $userId = $this->userId();
@@ -134,7 +134,7 @@ class AccountController extends Controller
         return response()->json($account);
     }
 
-    // Withdraw money
+
     public function withdraw(Request $request, $id)
     {
         $userId = $this->userId();

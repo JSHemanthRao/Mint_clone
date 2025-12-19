@@ -3,16 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\WelcomeEmail; // We'll create this later
-
+use App\Mail\WelcomeEmail; 
 class UserController extends Controller
 {
     // UserController.php
@@ -38,17 +33,10 @@ class UserController extends Controller
     }
 }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         return response()->json(User::all(),200);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -63,17 +51,13 @@ class UserController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
-        // Mail::to($user->email)->send(new WelcomeEmail($user));
-
-        // return redirect('/')->with('success', 'Registration successful! Check your email.');
+        Mail::to($user->email)->send(new WelcomeEmail($user));
 
         return response()->json($user, 201);
 
     }
 
-    /**
-     * Display the specified resource.
-     */
+
     public function show($id)
     {
         $user = User::find($id);
@@ -83,9 +67,7 @@ class UserController extends Controller
         return response()->json($user);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, $id)
     {
         $user = User::find($id);
@@ -110,9 +92,7 @@ class UserController extends Controller
         return response()->json(['message' => 'Updated Successfully','data'=>$user],200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy($id)
     {
         $user = User::find($id);
