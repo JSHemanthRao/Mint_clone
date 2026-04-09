@@ -22,25 +22,25 @@ class GoalController extends Controller
             'due_date' => 'required|date',
         ]);
 
-        $validated['user_id'] = Auth::id(); 
+        $validated['user_id'] = Auth::id();
         $goal = Goal::create($validated);
         return response()->json($goal, 201);
     }
 
     public function show($id)
     {
-        $goal = Goal::find($id);
+        $goal = Goal::where('id', $id)->where('user_id', Auth::id())->first();
         if (!$goal) {
-            return response()->json(['message' => 'Goal not found'], 404);
+            return response()->json(['message' => 'Goal not found or unauthorized'], 404);
         }
         return response()->json($goal);
     }
 
     public function update(Request $request, $id)
     {
-        $goal = Goal::find($id);
+        $goal = Goal::where('id', $id)->where('user_id', Auth::id())->first();
         if (!$goal) {
-            return response()->json(['message' => 'Goal not found'], 404);
+            return response()->json(['message' => 'Goal not found or unauthorized'], 404);
         }
 
         $validated = $request->validate([
@@ -57,9 +57,9 @@ class GoalController extends Controller
 
     public function destroy($id)
     {
-        $goal = Goal::find($id);
+        $goal = Goal::where('id', $id)->where('user_id', Auth::id())->first();
         if (!$goal) {
-            return response()->json(['message' => 'Goal not found'], 404);
+            return response()->json(['message' => 'Goal not found or unauthorized'], 404);
         }
         $goal->delete();
         return response()->json(['message' => 'Goal deleted successfully']);

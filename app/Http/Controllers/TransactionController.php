@@ -47,8 +47,8 @@ class TransactionController extends Controller
         ]);
 
         $account = Account::where('id', $validated['account_id'])
-                          ->where('user_id', Auth::id())
-                          ->first();
+            ->where('user_id', Auth::id())
+            ->first();
 
         if (!$account) {
             return response()->json(['error' => 'Account not found or unauthorized'], 403);
@@ -126,7 +126,12 @@ class TransactionController extends Controller
             $oldAccount->save();
 
             // Apply new transaction's balance effect
-            $newAccount = Account::find($validated['account_id']);
+            // Ensure the new account belongs to the user
+            $newAccount = Account::where('id', $validated['account_id'])->where('user_id', Auth::id())->first();
+            if (!$newAccount) {
+                throw new \Exception("Target account not found or unauthorized");
+            }
+
             if ($validated['type'] === 'expense') {
                 $newAccount->balance -= abs($validated['amount']);
             } elseif ($validated['type'] === 'income') {
@@ -149,7 +154,8 @@ class TransactionController extends Controller
     public function destroy($id)
     {
         $transaction = Transaction::find($id);
-        if (!$transaction) return response()->json(['message' => 'Transaction not found'], 404);
+        if (!$transaction)
+            return response()->json(['message' => 'Transaction not found'], 404);
 
         $accountIds = Account::where('user_id', Auth::id())->pluck('id');
         if (!$accountIds->contains($transaction->account_id)) {

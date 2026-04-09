@@ -10,7 +10,8 @@ class NotificationController extends Controller
 {
     private function userId(): ?int
     {
-        if (Auth::check()) return Auth::id();
+        if (Auth::check())
+            return Auth::id();
 
         try {
             $user = JWTAuth::parseToken()->authenticate();
@@ -29,6 +30,7 @@ class NotificationController extends Controller
 
         return response()->json(
             Notification::where('user_id', $userId)
+                ->where('read', false)
                 ->latest()
                 ->limit(20)
                 ->get()

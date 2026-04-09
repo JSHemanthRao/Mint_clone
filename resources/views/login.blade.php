@@ -1,13 +1,13 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-900 text-gray-100 flex items-center justify-center h-screen">
   <div class="w-full max-w-md bg-gray-800 p-8 rounded-2xl shadow-lg">
     <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
@@ -30,8 +30,7 @@
       </div>
 
       <!-- Submit -->
-      <button type="submit"
-        class="w-full bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-semibold">
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-semibold">
         Login
       </button>
 
@@ -47,7 +46,7 @@
   <script>
     localStorage.removeItem("jwt_token");
 
-    document.getElementById('loginForm').addEventListener('submit', async function(event){
+    document.getElementById('loginForm').addEventListener('submit', async function (event) {
       event.preventDefault();
 
       // Reset error messages
@@ -59,15 +58,9 @@
       let password = document.getElementById('login_password').value.trim();
       let hasError = false;
 
-
-
       // Client-side validation
       if (!email) {
         document.getElementById('emailError').textContent = "Email is required.";
-        document.getElementById('emailError').classList.remove('hidden');
-        hasError = true;
-      } else if (!/\S+@\S+\.\S+/.test(email)) {
-        document.getElementById('emailError').textContent = "Enter a valid email.";
         document.getElementById('emailError').classList.remove('hidden');
         hasError = true;
       }
@@ -80,40 +73,35 @@
 
       if (hasError) return;
 
-      // API request
-      let res = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
+      try {
+        let res = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
 
-      let data = await res.json();
+        let data = await res.json();
 
-      if (res.ok) {
-        localStorage.setItem("jwt_token", data.token);
-        window.location.href = "/dashboard";
-      } else {
-        document.getElementById('generalError').textContent =
-          data.error || "Login failed. Please check credentials.";
+        if (res.ok) {
+          localStorage.setItem("jwt_token", data.token);
+          // Also set a cookie if needed, but for now just redirect
+          window.location.href = "/dashboard";
+        } else {
+          document.getElementById('generalError').textContent =
+            data.message || data.error || "Login failed. Please check credentials.";
+          document.getElementById('generalError').classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+        document.getElementById('generalError').textContent = "An error occurred. Please try again.";
         document.getElementById('generalError').classList.remove('hidden');
       }
-
-      if (localStorage.getItem("token")) {
-      window.location.href = "/dashboard";
-    }
-
-    // Fake login logic (replace with API call)
-    document.getElementById("loginForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      localStorage.setItem("token", "fake-jwt-token");
-      window.location.href = "/dashboard";
-    });
-      
     });
   </script>
 
 </body>
+
 </html>

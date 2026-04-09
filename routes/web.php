@@ -7,7 +7,7 @@ use App\Http\Controllers\BillController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\UserController; 
+// use App\Http\Controllers\UserController; 
 
 
 Route::get('/profile', function () {

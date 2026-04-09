@@ -8,32 +8,33 @@ use Illuminate\Support\Facades\Auth;
 
 class BudgetController extends Controller
 {
-//
-public function index()
-{
-    $budgets = Budget::with('category')->where('user_id', Auth::id())->get();
-    return response()->json($budgets);
-}
+    //
+    public function index()
+    {
+        $budgets = Budget::with('category')->where('user_id', Auth::id())->get();
+        return response()->json($budgets);
+    }
 
 
-    public function display(){
+    public function display()
+    {
         $categories = Category::all();
         return view('Budgets', compact('categories'));
     }
 
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'category_id' => 'required|exists:categories,id',
-        'amount' => 'required|numeric',
-    ]);
+    {
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'amount' => 'required|numeric',
+        ]);
 
-    $validated['user_id'] = Auth::id();
-    $budget = Budget::create($validated);
+        $validated['user_id'] = Auth::id();
+        $budget = Budget::create($validated);
 
-   
-    return response()->json($budget->load('category'), 201);
-}
+
+        return response()->json($budget->load('category'), 201);
+    }
 
 
     public function show($id)
@@ -47,9 +48,9 @@ public function index()
 
     public function update(Request $request, $id)
     {
-        $budget = Budget::find($id);
+        $budget = Budget::where('id', $id)->where('user_id', Auth::id())->first();
         if (!$budget) {
-            return response()->json(['message' => 'Budget not found'], 404);
+            return response()->json(['message' => 'Budget not found or unauthorized'], 404);
         }
 
         $validated = $request->validate([
@@ -63,9 +64,9 @@ public function index()
 
     public function destroy($id)
     {
-        $budget = Budget::find($id);
+        $budget = Budget::where('id', $id)->where('user_id', Auth::id())->first();
         if (!$budget) {
-            return response()->json(['message' => 'Budget not found'], 404);
+            return response()->json(['message' => 'Budget not found or unauthorized'], 404);
         }
         $budget->delete();
         return response()->json(['message' => 'Budget deleted successfully']);

@@ -42,7 +42,8 @@
       <!-- Confirm Password -->
       <div>
         <label class="block text-sm font-medium text-gray-300">Confirm Password</label>
-        <input type="password" id="confirm_password" required placeholder="Confirm your password" name="confirm_password"
+        <input type="password" id="confirm_password" required placeholder="Confirm your password"
+          name="confirm_password"
           class="mt-1 w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
         <p id="error-confirm-password" class="text-red-500 text-xs mt-1 hidden"></p>
       </div>
@@ -63,7 +64,7 @@
   </div>
   <script>
     localStorage.removeItem("jwt_token");
-    document.getElementById('registerForm').addEventListener('submit', async function(event) {
+    document.getElementById('registerForm').addEventListener('submit', async function (event) {
       event.preventDefault();
 
       // Clear old errors
@@ -79,61 +80,57 @@
         password_confirmation: document.getElementById('confirm_password').value
       };
 
-      let res = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(user)
-      });
+      try {
+        let res = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(user)
+        });
 
-      let data = await res.json();
+        let data = await res.json();
 
-      if (res.ok) {
-        localStorage.setItem("jwt_token", data.token);
-        window.location.href = "/dashboard";
-      } else {
-        if (data.errors) {
-          // Laravel sends validation errors in "errors"
-          if (data.errors.name) {
-            let el = document.getElementById("error-username");
-            el.textContent = data.errors.name[0];
-            el.classList.remove("hidden");
-          }
-          if (data.errors.email) {
+        if (res.ok) {
+          localStorage.setItem("jwt_token", data.token);
+          window.location.href = "/dashboard";
+        } else {
+          if (data.errors) {
+            // Laravel sends validation errors in "errors"
+            if (data.errors.name) {
+              let el = document.getElementById("error-username");
+              el.textContent = data.errors.name[0];
+              el.classList.remove("hidden");
+            }
+            if (data.errors.email) {
+              let el = document.getElementById("error-email");
+              el.textContent = data.errors.email[0];
+              el.classList.remove("hidden");
+            }
+            if (data.errors.password) {
+              let el = document.getElementById("error-password");
+              el.textContent = data.errors.password[0];
+              el.classList.remove("hidden");
+            }
+            if (data.errors.password_confirmation) {
+              let el = document.getElementById("error-confirm-password");
+              el.textContent = data.errors.password_confirmation[0];
+              el.classList.remove("hidden");
+            }
+          } else if (data.message || data.error) {
+            // For general errors
             let el = document.getElementById("error-email");
-            el.textContent = data.errors.email[0];
+            el.textContent = data.message || data.error;
             el.classList.remove("hidden");
           }
-          if (data.errors.password) {
-            let el = document.getElementById("error-password");
-            el.textContent = data.errors.password[0];
-            el.classList.remove("hidden");
-          }
-          if (data.errors.password_confirmation) {
-            let el = document.getElementById("error-confirm-password");
-            el.textContent = data.errors.password_confirmation[0];
-            el.classList.remove("hidden");
-          }
-        } else if (data.error) {
-          // For general errors
-          let el = document.getElementById("error-email");
-          el.textContent = data.error;
-          el.classList.remove("hidden");
         }
+      } catch (error) {
+        console.error("Register error:", error);
+        let el = document.getElementById("error-email");
+        el.textContent = "Registration failed. Please try again.";
+        el.classList.remove("hidden");
       }
-      if (localStorage.getItem("token")) {
-      window.location.href = "/dashboard";
-    }
-
-    // Fake register logic (replace with API call)
-    document.getElementById("registerForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      localStorage.setItem("token", "fake-jwt-token");
-      window.location.href = "/dashboard";
-    });
-    
     });
   </script>
 </body>
